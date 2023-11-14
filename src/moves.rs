@@ -2,66 +2,73 @@ use crate::cube::{Cube, FBFace, LRFace, UDFace};
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
 pub enum Dir {
-    R, L, D, U, F, B
+    R,
+    L,
+    D,
+    U,
+    F,
+    B,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
 pub enum Amt {
-    One, Two, Rev
+    One,
+    Two,
+    Rev,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
 pub struct FullMove {
     pub dir: Dir,
-    pub amt: Amt
+    pub amt: Amt,
 }
 
 /// Parses an input as a whitespace-separated list of moves. Panics on bad input because this is
 /// not a production application.
 pub fn parse_many(input: &str) -> Vec<FullMove> {
-    input.split_ascii_whitespace()
-        .map(|tok| FullMove::try_from(tok).map_err(|e| panic!("Bad input: {}", e)).unwrap())
+    input
+        .split_ascii_whitespace()
+        .map(|tok| {
+            FullMove::try_from(tok)
+                .map_err(|e| panic!("Bad input: {}", e))
+                .unwrap()
+        })
         .collect()
 }
 
-impl <'a> TryFrom<&'a str> for FullMove {
+impl<'a> TryFrom<&'a str> for FullMove {
     type Error = &'a str;
 
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
-        use Dir::*;
         use Amt::*;
+        use Dir::*;
 
         match value {
             "R" => Ok(FullMove { dir: R, amt: One }),
             "R2" => Ok(FullMove { dir: R, amt: Two }),
             "R'" => Ok(FullMove { dir: R, amt: Rev }),
 
-
             "L" => Ok(FullMove { dir: L, amt: One }),
             "L2" => Ok(FullMove { dir: L, amt: Two }),
             "L'" => Ok(FullMove { dir: L, amt: Rev }),
-
 
             "U" => Ok(FullMove { dir: U, amt: One }),
             "U2" => Ok(FullMove { dir: U, amt: Two }),
             "U'" => Ok(FullMove { dir: U, amt: Rev }),
 
-
             "D" => Ok(FullMove { dir: D, amt: One }),
             "D2" => Ok(FullMove { dir: D, amt: Two }),
             "D'" => Ok(FullMove { dir: D, amt: Rev }),
-
 
             "F" => Ok(FullMove { dir: F, amt: One }),
             "F2" => Ok(FullMove { dir: F, amt: Two }),
             "F'" => Ok(FullMove { dir: F, amt: Rev }),
 
-
             "B" => Ok(FullMove { dir: B, amt: One }),
             "B2" => Ok(FullMove { dir: B, amt: Two }),
             "B'" => Ok(FullMove { dir: B, amt: Rev }),
 
-            other => Err(other)
+            other => Err(other),
         }
     }
 }
@@ -93,38 +100,38 @@ pub trait CanMove: Sized {
             Dir::R => match amt {
                 Amt::One => self.r(),
                 Amt::Two => self.r().r(),
-                Amt::Rev => self.r().r().r()
-            }
+                Amt::Rev => self.r().r().r(),
+            },
             Dir::L => match amt {
                 Amt::One => self.l(),
                 Amt::Two => self.l().l(),
-                Amt::Rev => self.l().l().l()
-            }
+                Amt::Rev => self.l().l().l(),
+            },
             Dir::D => match amt {
                 Amt::One => self.d(),
                 Amt::Two => self.d().d(),
-                Amt::Rev => self.d().d().d()
-            }
+                Amt::Rev => self.d().d().d(),
+            },
             Dir::U => match amt {
                 Amt::One => self.u(),
                 Amt::Two => self.u().u(),
                 Amt::Rev => self.u().u().u(),
-            }
+            },
             Dir::F => match amt {
                 Amt::One => self.f(),
                 Amt::Two => self.f().f(),
                 Amt::Rev => self.f().f().f(),
-            }
+            },
             Dir::B => match amt {
                 Amt::One => self.b(),
                 Amt::Two => self.b().b(),
                 Amt::Rev => self.b().b().b(),
-            }
+            },
         }
     }
 }
 
-impl <F> CanMove for Cube<F> {
+impl<F> CanMove for Cube<F> {
     #[inline(always)]
     fn r(self) -> Self {
         let Self { u, d, l, r, f, b } = self;
@@ -143,7 +150,7 @@ impl <F> CanMove for Cube<F> {
                 dc: r.bc,
                 bc: r.uc,
                 // the center abides
-                cc: r.cc
+                cc: r.cc,
             },
             d: UDFace {
                 fr: b.dr,
@@ -168,7 +175,7 @@ impl <F> CanMove for Cube<F> {
                 rc: u.rc,
                 dr: u.br,
                 ..b
-            }
+            },
         }
     }
 
@@ -208,20 +215,20 @@ impl <F> CanMove for Cube<F> {
                 ul: u.bl,
                 lc: u.lc,
                 dl: u.fl,
-                .. f
+                ..f
             },
             b: FBFace {
                 ul: d.bl,
                 lc: d.lc,
                 dl: d.fl,
                 ..b
-            }
+            },
         }
     }
 
     #[inline(always)]
     fn u(self) -> Self {
-        let Self { u, d, b, f, r , l } = self;
+        let Self { u, d, b, f, r, l } = self;
 
         Self {
             d,
@@ -237,7 +244,7 @@ impl <F> CanMove for Cube<F> {
                 bc: u.lc,
                 lc: u.fc,
                 // center abides
-                cc: u.cc
+                cc: u.cc,
             },
             r: LRFace {
                 uf: b.ur,
@@ -262,15 +269,13 @@ impl <F> CanMove for Cube<F> {
                 uc: l.uc,
                 ul: l.uf,
                 ..b
-            }
+            },
         }
     }
 
     #[inline(always)]
     fn d(self) -> Self {
-        let Self {
-            u, d, f, b, r, l
-        } = self;
+        let Self { u, d, f, b, r, l } = self;
 
         Self {
             u,
@@ -286,7 +291,7 @@ impl <F> CanMove for Cube<F> {
                 bc: d.rc,
                 rc: d.fc,
                 // center abides
-                cc: d.cc
+                cc: d.cc,
             },
             r: LRFace {
                 db: f.dr,
@@ -311,13 +316,13 @@ impl <F> CanMove for Cube<F> {
                 dc: l.dc,
                 dr: l.df,
                 ..f
-            }
+            },
         }
     }
 
     #[inline(always)]
     fn b(self) -> Self {
-        let Self { u, d, b, f, l, r} = self;
+        let Self { u, d, b, f, l, r } = self;
         Self {
             f,
             b: FBFace {
@@ -357,13 +362,13 @@ impl <F> CanMove for Cube<F> {
                 bc: l.bc,
                 br: l.db,
                 ..d
-            }
+            },
         }
     }
 
     #[inline(always)]
     fn f(self) -> Self {
-        let Self { u, d, b, f, l, r} = self;
+        let Self { u, d, b, f, l, r } = self;
 
         Self {
             b,
@@ -391,7 +396,7 @@ impl <F> CanMove for Cube<F> {
                 df: d.fr,
                 fc: d.fc,
                 uf: d.fl,
-                    ..l
+                ..l
             },
             u: UDFace {
                 fl: l.df,
@@ -404,7 +409,7 @@ impl <F> CanMove for Cube<F> {
                 fc: r.fc,
                 fr: r.uf,
                 ..d
-            }
+            },
         }
     }
 }
@@ -414,7 +419,7 @@ mod tests {
     use super::*;
 
     fn solved() -> Cube {
-        return Cube::make_solved()
+        return Cube::make_solved();
     }
 
     #[test]

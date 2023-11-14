@@ -210,8 +210,13 @@ impl Cube<Facelet> {
     }
 }
 
-impl <F: FaceletKind> Cube<F> {
+impl<F: FaceletKind> Cube<F> {
     pub fn is_solved(&self) -> bool {
-        self.u.is_solved() && self.d.is_solved() && self.f.is_solved() && self.b.is_solved() && self.l.is_solved() && self.r.is_solved()
+        self.u.is_solved()
+            && self.d.is_solved()
+            && self.f.is_solved()
+            && self.b.is_solved()
+            && self.l.is_solved()
+            && self.r.is_solved()
     }
 }
