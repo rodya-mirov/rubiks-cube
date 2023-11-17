@@ -17,17 +17,33 @@ pub enum Facelet {
     Orange,
 }
 
-impl Facelet {
-    pub fn is_opposite(&self, other: Self) -> bool {
-        match self {
-            Facelet::Yellow => other == Facelet::White,
-            Facelet::White => other == Facelet::Yellow,
-            Facelet::Green => other == Facelet::Blue,
-            Facelet::Blue => other == Facelet::Green,
-            Facelet::Red => other == Facelet::Orange,
-            Facelet::Orange => other == Facelet::Red,
+const CORNERS: [[Facelet; 3]; 8] = [
+    // In order: front, top, right
+    // starting with "white on the front" ...
+    [Facelet::White, Facelet::Blue, Facelet::Red],
+    [Facelet::White, Facelet::Red, Facelet::Green],
+    [Facelet::White, Facelet::Green, Facelet::Orange],
+    [Facelet::White, Facelet::Orange, Facelet::Blue],
+    // ... then the "yellow on the front"
+    [Facelet::Yellow, Facelet::Blue, Facelet::Orange],
+    [Facelet::Yellow, Facelet::Orange, Facelet::Green],
+    [Facelet::Yellow, Facelet::Green, Facelet::Red],
+    [Facelet::Yellow, Facelet::Red, Facelet::Blue],
+];
+
+pub fn get_third_corner(front: Facelet, top: Facelet) -> Facelet {
+    for corner in CORNERS {
+        for i in 0..3 {
+            if corner[i] == front && corner[(i + 1) % 3] == top {
+                return corner[(i + 2) % 3].clone();
+            }
         }
     }
+
+    panic!(
+        "There is no corner with front {:?} and top {:?}",
+        front, top
+    );
 }
 
 impl FaceletKind for Facelet {
@@ -198,14 +214,19 @@ pub struct Cube<FaceletType = Facelet> {
 }
 
 impl Cube<Facelet> {
-    pub fn make_solved() -> Self {
+    pub fn make_solved(front: Facelet, top: Facelet) -> Self {
+        let right = get_third_corner(front.clone(), top.clone());
+        let down = get_third_corner(front.clone(), right.clone());
+        let left = get_third_corner(front.clone(), down.clone());
+        let back = get_third_corner(right.clone(), top.clone());
+
         Self {
-            u: UDFace::make_solved(Facelet::White),
-            d: UDFace::make_solved(Facelet::Yellow),
-            l: LRFace::make_solved(Facelet::Orange),
-            r: LRFace::make_solved(Facelet::Red),
-            f: FBFace::make_solved(Facelet::Green),
-            b: FBFace::make_solved(Facelet::Blue),
+            u: UDFace::make_solved(top),
+            d: UDFace::make_solved(down),
+            l: LRFace::make_solved(left),
+            r: LRFace::make_solved(right),
+            f: FBFace::make_solved(front),
+            b: FBFace::make_solved(back),
         }
     }
 }

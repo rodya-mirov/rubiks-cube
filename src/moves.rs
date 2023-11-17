@@ -417,9 +417,10 @@ impl<F> CanMove for Cube<F> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cube::Facelet;
 
     fn solved() -> Cube {
-        return Cube::make_solved();
+        return Cube::make_solved(Facelet::White, Facelet::Blue);
     }
 
     #[test]
@@ -475,13 +476,13 @@ mod tests {
 
     fn moves_unsolved(input: &str) {
         let moves = parse_many(input);
-        let actual = Cube::make_solved().apply_many(&moves);
+        let actual = Cube::make_solved(Facelet::Orange, Facelet::White).apply_many(&moves);
         assert!(!actual.is_solved())
     }
 
     fn moves_solved(input: &str) {
         let moves = parse_many(input);
-        let actual = Cube::make_solved().apply_many(&moves);
+        let actual = Cube::make_solved(Facelet::Yellow, Facelet::Red).apply_many(&moves);
         assert!(actual.is_solved());
     }
 
