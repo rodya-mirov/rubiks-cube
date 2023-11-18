@@ -1,10 +1,11 @@
 use crate::cube::Facelet;
-use crate::moves::{parse_many, CanMove};
+use crate::moves::{parse_many, to_nice_str, CanMove};
 use crate::shadow::to_white_cross;
 
 mod cube;
 mod moves;
 mod shadow;
+mod solve;
 
 fn main() {
     let original = cube::Cube::make_solved(Facelet::Green, Facelet::White);
@@ -27,13 +28,24 @@ fn main() {
 
     assert!(!wc_masked.is_solved());
 
-    // this scramble is an OLL scramble; it doesn't mess up the white cross
-    let top_messed = original
-        .clone()
-        .apply_many(&parse_many("R U2 R' U R U R' U"));
+    let input = "U2 F L D L' D' F'";
 
-    let wc_masked = to_white_cross(shuffled_not_solved.clone());
+    println!("With green front, yellow top; applying moves {input}");
 
-    assert!(!top_messed.is_solved());
-    assert!(wc_masked.is_solved());
+    let bot_messed =
+        cube::Cube::make_solved(Facelet::Green, Facelet::Yellow).apply_many(&parse_many(input));
+
+    let wc_solution = solve::solve_wc(bot_messed.clone());
+
+    println!(
+        "Found a solution for the white cross: {}",
+        to_nice_str(&wc_solution)
+    );
+
+    // after applying the solution, the WC should be solved, but the whole cube probably is not
+    let altered = bot_messed.apply_many(&wc_solution);
+    let altered_mask = to_white_cross(altered.clone());
+
+    assert!(!altered.is_solved());
+    assert!(altered_mask.is_solved());
 }

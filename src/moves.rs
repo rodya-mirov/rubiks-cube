@@ -1,4 +1,5 @@
 use crate::cube::{Cube, FBFace, LRFace, UDFace};
+use std::fmt::{Display, Formatter};
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
 pub enum Dir {
@@ -34,6 +35,37 @@ pub fn parse_many(input: &str) -> Vec<FullMove> {
                 .unwrap()
         })
         .collect()
+}
+
+impl Display for FullMove {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.dir)?;
+
+        match self.amt {
+            Amt::One => {}
+            Amt::Two => write!(f, "2")?,
+            Amt::Rev => write!(f, "'")?,
+        }
+
+        Ok(())
+    }
+}
+
+pub fn to_nice_str(fms: &[FullMove]) -> String {
+    let mut moves = fms.iter().copied();
+
+    let mut out = String::new();
+
+    if let Some(next) = moves.next() {
+        out.push_str(&format!("{next}"));
+    }
+
+    for next in moves {
+        out.push(' ');
+        out.push_str(&format!("{next}"));
+    }
+
+    out
 }
 
 impl<'a> TryFrom<&'a str> for FullMove {
