@@ -1,11 +1,13 @@
 use crate::cube::Facelet;
 use crate::moves::{parse_many, to_nice_str, CanMove};
 use crate::shadow::to_white_cross;
+use crate::timed::timed;
 
 mod cube;
 mod moves;
 mod shadow;
 mod solve;
+mod timed;
 
 fn main() {
     let original = cube::Cube::make_solved(Facelet::Green, Facelet::White);
@@ -35,7 +37,7 @@ fn main() {
     let bot_messed =
         cube::Cube::make_solved(Facelet::Green, Facelet::Yellow).apply_many(&parse_many(input));
 
-    let wc_solution = solve::solve_wc(bot_messed.clone());
+    let wc_solution = timed("Solving WC", || solve::solve_wc(bot_messed.clone()));
 
     println!(
         "Found a solution for the white cross: {}",
@@ -48,4 +50,8 @@ fn main() {
 
     assert!(!altered.is_solved());
     assert!(altered_mask.is_solved());
+    assert!(
+        wc_solution.len() < parse_many(input).len(),
+        "Solving WC is simpler than solving the whole cube"
+    )
 }
