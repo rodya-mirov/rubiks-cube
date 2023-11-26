@@ -20,7 +20,11 @@ fn thistle_stuff() {
 
     let g1_solution = timed("G0 to G1", || thistlethwaite::solve_to_g1(&thistle_problem));
 
-    println!("Found a solution for the G1: {}", to_nice_str(&g1_solution));
+    println!(
+        "Found a solution for the G1 of length {}: {}",
+        g1_solution.len(),
+        to_nice_str(&g1_solution)
+    );
 
     let g1_cube = thistle_problem.clone().apply_many(&g1_solution);
     assert!(
@@ -30,7 +34,11 @@ fn thistle_stuff() {
 
     let g2_solution = timed("G1 to G0", || thistlethwaite::solve_to_g2(&g1_cube));
 
-    println!("Found a solution for the G2: {}", to_nice_str(&g2_solution));
+    println!(
+        "Found a solution for the G2 of length {}: {}",
+        g2_solution.len(),
+        to_nice_str(&g2_solution)
+    );
 
     let g2_cube = g1_cube.clone().apply_many(&g2_solution);
     assert!(

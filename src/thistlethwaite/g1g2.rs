@@ -12,8 +12,6 @@ const ALL_AMTS: [Amt; 3] = [Amt::One, Amt::Two, Amt::Rev];
 pub fn solve_to_g2(cube: &Cube) -> Vec<FullMove> {
     let state = G1State::from_cube(cube);
 
-    println!("Got g0 state {state:?}");
-
     // iterative-deepening DFS; returns true if it found a solution, or false if not
     fn ida(cube: &G1State, running: &mut Vec<FullMove>, max_depth: usize) -> bool {
         if cube.is_solved() {
@@ -59,12 +57,6 @@ pub fn solve_to_g2(cube: &Cube) -> Vec<FullMove> {
             for amt in ALL_AMTS.iter().copied() {
                 let fm = FullMove { amt, dir };
                 let next = cube.clone().apply(fm);
-
-                // for WC there are so many blanks there is a good chance an individual move
-                // will be a no-op, so this cuts runtime by two thirds (!)
-                if &next == cube {
-                    continue;
-                }
 
                 running.push(fm);
 
