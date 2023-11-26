@@ -108,6 +108,9 @@ impl<'a> TryFrom<&'a str> for FullMove {
 pub trait CanMove: Sized {
     fn r(self) -> Self;
 
+    // TODO: we may want to specialize this implementation with r_two, r_rev, and so on
+    //          so they can be specifically overridden
+
     fn l(self) -> Self;
 
     fn u(self) -> Self;
