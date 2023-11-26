@@ -7,6 +7,7 @@ mod cube;
 mod moves;
 mod shadow;
 mod solve;
+mod thistlethwaite;
 mod timed;
 
 fn main() {
@@ -53,5 +54,23 @@ fn main() {
     assert!(
         wc_solution.len() < parse_many(input).len(),
         "Solving WC is simpler than solving the whole cube"
-    )
+    );
+
+    // blah blah blah
+    let input = "R U F R U F";
+    println!();
+    println!("For thistlethwaite, starting with scramble: {}", input);
+
+    let thistle_problem =
+        cube::Cube::make_solved(Facelet::Green, Facelet::Yellow).apply_many(&parse_many(input));
+
+    let g1_solution = timed("G0 to G1", || thistlethwaite::solve_to_g1(&thistle_problem));
+
+    println!("Found a solution for the G1: {}", to_nice_str(&g1_solution));
+
+    let g1_cube = thistle_problem.clone().apply_many(&g1_solution);
+    assert!(
+        !g1_cube.is_solved(),
+        "solving to g1 shouldn't, like, solve it"
+    );
 }

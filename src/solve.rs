@@ -1,4 +1,4 @@
-//! Module for solving cubes in various ways
+//! Module for solving cubes in various ways and to various degrees
 
 use crate::cube::{AmbigFacelet, Cube};
 use crate::moves::{Amt, CanMove, Dir, FullMove};
