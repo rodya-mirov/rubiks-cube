@@ -1,7 +1,7 @@
 //! Module for solving cubes in various ways and to various degrees
 
 use crate::cube::{AmbigFacelet, Cube};
-use crate::moves::{Amt, CanMove, Dir, FullMove};
+use crate::moves::{Amt, ApplyMove, Dir, FullMove};
 use crate::shadow::to_white_cross;
 
 type MaskedCube = Cube<AmbigFacelet>;

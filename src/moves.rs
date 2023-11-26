@@ -105,6 +105,61 @@ impl<'a> TryFrom<&'a str> for FullMove {
     }
 }
 
+pub trait ApplyMove: Sized {
+    fn apply_many(self, moves: &[FullMove]) -> Self {
+        let mut out = self;
+        for m in moves {
+            out = out.apply(*m);
+        }
+        out
+    }
+
+    fn apply(self, m: FullMove) -> Self;
+}
+
+impl<T> ApplyMove for T
+where
+    T: CanMove + Sized,
+{
+    fn apply(self, m: FullMove) -> Self {
+        {
+            let FullMove { dir, amt } = m;
+            match dir {
+                Dir::R => match amt {
+                    Amt::One => self.r(),
+                    Amt::Two => self.r().r(),
+                    Amt::Rev => self.r().r().r(),
+                },
+                Dir::L => match amt {
+                    Amt::One => self.l(),
+                    Amt::Two => self.l().l(),
+                    Amt::Rev => self.l().l().l(),
+                },
+                Dir::D => match amt {
+                    Amt::One => self.d(),
+                    Amt::Two => self.d_two(),
+                    Amt::Rev => self.d().d().d(),
+                },
+                Dir::U => match amt {
+                    Amt::One => self.u(),
+                    Amt::Two => self.u_two(),
+                    Amt::Rev => self.u().u().u(),
+                },
+                Dir::F => match amt {
+                    Amt::One => self.f(),
+                    Amt::Two => self.f().f(),
+                    Amt::Rev => self.f().f().f(),
+                },
+                Dir::B => match amt {
+                    Amt::One => self.b(),
+                    Amt::Two => self.b().b(),
+                    Amt::Rev => self.b().b().b(),
+                },
+            }
+        }
+    }
+}
+
 pub trait CanMove: Sized {
     fn r(self) -> Self;
 
@@ -115,55 +170,19 @@ pub trait CanMove: Sized {
 
     fn u(self) -> Self;
 
+    fn u_two(self) -> Self {
+        self.u().u()
+    }
+
     fn d(self) -> Self;
+
+    fn d_two(self) -> Self {
+        self.d().d()
+    }
 
     fn b(self) -> Self;
 
     fn f(self) -> Self;
-
-    fn apply_many(self, moves: &[FullMove]) -> Self {
-        let mut out = self;
-        for m in moves {
-            out = out.apply(*m);
-        }
-        out
-    }
-
-    fn apply(self, m: FullMove) -> Self {
-        let FullMove { dir, amt } = m;
-        match dir {
-            Dir::R => match amt {
-                Amt::One => self.r(),
-                Amt::Two => self.r().r(),
-                Amt::Rev => self.r().r().r(),
-            },
-            Dir::L => match amt {
-                Amt::One => self.l(),
-                Amt::Two => self.l().l(),
-                Amt::Rev => self.l().l().l(),
-            },
-            Dir::D => match amt {
-                Amt::One => self.d(),
-                Amt::Two => self.d().d(),
-                Amt::Rev => self.d().d().d(),
-            },
-            Dir::U => match amt {
-                Amt::One => self.u(),
-                Amt::Two => self.u().u(),
-                Amt::Rev => self.u().u().u(),
-            },
-            Dir::F => match amt {
-                Amt::One => self.f(),
-                Amt::Two => self.f().f(),
-                Amt::Rev => self.f().f().f(),
-            },
-            Dir::B => match amt {
-                Amt::One => self.b(),
-                Amt::Two => self.b().b(),
-                Amt::Rev => self.b().b().b(),
-            },
-        }
-    }
 }
 
 impl<F> CanMove for Cube<F> {

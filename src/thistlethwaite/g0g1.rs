@@ -1,5 +1,5 @@
 use crate::cube::{Cube, Facelet};
-use crate::moves::{Amt, CanMove, Dir, FullMove};
+use crate::moves::{Amt, ApplyMove, CanMove, Dir, FullMove};
 
 /// Invariants from a cube in G0 to describe what's left to get to G1
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]

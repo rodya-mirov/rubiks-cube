@@ -1,5 +1,5 @@
 use crate::cube::Cube;
-use crate::moves::{Amt, CanMove, Dir, FullMove};
+use crate::moves::{Amt, ApplyMove, Dir, FullMove};
 
 mod full_state;
 

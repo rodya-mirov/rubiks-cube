@@ -117,12 +117,17 @@ mod corner_state {
         }
 
         fn u(self) -> Self {
+            panic!("U is not allowed");
+        }
+
+        fn u_two(self) -> Self {
             CornersState {
                 // U alters the orientation of the affected cubelets in a way that is sort of weird
-                ful: self.fur.ccw(),
-                fur: self.bur.cw(),
-                bur: self.bul.ccw(),
-                bul: self.ful.cw(),
+                // but we're not allowed to use it anymore; U2 is a simple swap
+                ful: self.bur,
+                bur: self.ful,
+                fur: self.bul,
+                bul: self.fur,
                 ..self
             }
         }
@@ -328,16 +333,24 @@ impl CanMove for G1State {
     }
 
     fn u(self) -> Self {
+        panic!("U not supported")
+    }
+
+    fn u_two(self) -> Self {
         Self {
-            corners: self.corners.u(),
-            edges: self.edges.u(),
+            corners: self.corners.u_two(),
+            edges: self.edges.u_two(),
         }
     }
 
     fn d(self) -> Self {
+        panic!("D not supported")
+    }
+
+    fn d_two(self) -> Self {
         Self {
-            corners: self.corners.d(),
-            edges: self.edges.d(),
+            corners: self.corners.d_two(),
+            edges: self.edges.d_two(),
         }
     }
 

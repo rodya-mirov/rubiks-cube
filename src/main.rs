@@ -1,5 +1,5 @@
 use crate::cube::Facelet;
-use crate::moves::{parse_many, to_nice_str, CanMove};
+use crate::moves::{parse_many, to_nice_str, ApplyMove};
 use crate::shadow::to_white_cross;
 use crate::timed::timed;
 
