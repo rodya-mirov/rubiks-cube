@@ -227,7 +227,7 @@ mod wc_tests {
     const WHITE_CROSS_SCRAMBLE: &'static str = "F L D L' D' F'";
 
     use super::*;
-    use crate::moves::{parse_many, CanMove};
+    use crate::moves::{parse_many, ApplyMove};
 
     #[test]
     fn from_start_test() {
