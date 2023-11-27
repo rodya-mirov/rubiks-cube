@@ -1,7 +1,9 @@
 use crate::cube::Facelet;
-use crate::moves::{parse_many, to_nice_str, ApplyMove};
+use crate::moves::{parse_many, to_nice_str, ApplyMove, FullMove};
 use crate::shadow::to_white_cross;
 use crate::timed::timed;
+use itertools::concat;
+use std::time::Instant;
 
 mod cube;
 mod moves;
@@ -10,8 +12,9 @@ mod solve;
 mod thistlethwaite;
 mod timed;
 
-fn thistle_stuff() {
-    let input = "R U F R U F";
+fn thistle_stuff(input: &str) {
+    let start = Instant::now();
+
     println!();
     println!("For thistlethwaite, starting with scramble: {}", input);
 
@@ -27,12 +30,8 @@ fn thistle_stuff() {
     );
 
     let g1_cube = thistle_problem.clone().apply_many(&g1_solution);
-    assert!(
-        !g1_cube.is_solved(),
-        "solving to g1 shouldn't, like, solve it"
-    );
 
-    let g2_solution = timed("G1 to G0", || thistlethwaite::solve_to_g2(&g1_cube));
+    let g2_solution = timed("G1 to G2", || thistlethwaite::solve_to_g2(&g1_cube));
 
     println!(
         "Found a solution for the G2 of length {}: {}",
@@ -41,10 +40,45 @@ fn thistle_stuff() {
     );
 
     let g2_cube = g1_cube.clone().apply_many(&g2_solution);
+
+    let g3_cache_pos = timed("Precompute G3 pos", || thistlethwaite::enumerate_g3_pos());
+
+    let g3_solution = timed("G2 to G3", || {
+        thistlethwaite::solve_to_g3(&g2_cube, &g3_cache_pos)
+    });
+
+    println!(
+        "Found a solution for the G3 of length {}: {}",
+        g3_solution.len(),
+        to_nice_str(&g3_solution)
+    );
+
+    let g3_cube = g2_cube.clone().apply_many(&g3_solution);
+
+    let g4_solution = timed("G3 to G4", || thistlethwaite::solve_to_g4(&g3_cube));
+
+    println!(
+        "Found a solution for the G4 of length {}: {}",
+        g4_solution.len(),
+        to_nice_str(&g4_solution)
+    );
+
+    let g4_cube = g3_cube.clone().apply_many(&g4_solution);
+
     assert!(
-        !g2_cube.is_solved(),
-        "solving to g2 shouldn't, like, solve it"
-    )
+        g4_cube.is_solved(),
+        "Cube should be solved, that's the point"
+    );
+
+    let total_solution: Vec<FullMove> =
+        concat([g1_solution, g2_solution, g3_solution, g4_solution]);
+
+    println!(
+        "Total solution has {} moves: {}",
+        total_solution.len(),
+        to_nice_str(&total_solution)
+    );
+    println!("Finding that solution took {:?}", start.elapsed());
 }
 
 #[allow(unused)]
@@ -99,5 +133,13 @@ fn main() {
     // this is just debug stuff, uncomment to allow
     // wc_stuff();
 
-    thistle_stuff();
+    for input in [
+        "R U F",
+        "R U F R U F",
+        "R U F R U F R U F",
+        "R U F R U F R U F2",
+        "U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2",
+    ] {
+        thistle_stuff(input);
+    }
 }
