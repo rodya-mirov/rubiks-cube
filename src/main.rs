@@ -12,7 +12,7 @@ mod solve;
 mod thistlethwaite;
 mod timed;
 
-fn thistle_stuff(input: &str) {
+fn thistle_stuff(input: &str, thistle_cache: &thistlethwaite::PosCache) {
     let start = Instant::now();
 
     println!();
@@ -41,10 +41,8 @@ fn thistle_stuff(input: &str) {
 
     let g2_cube = g1_cube.clone().apply_many(&g2_solution);
 
-    let g3_cache_pos = timed("Precompute G3 pos", || thistlethwaite::enumerate_g3_pos());
-
     let g3_solution = timed("G2 to G3", || {
-        thistlethwaite::solve_to_g3(&g2_cube, &g3_cache_pos)
+        thistlethwaite::solve_to_g3(&g2_cube, &thistle_cache)
     });
 
     println!(
@@ -133,6 +131,8 @@ fn main() {
     // this is just debug stuff, uncomment to allow
     // wc_stuff();
 
+    let thistle_cache = thistlethwaite::enumerate_g3_pos();
+
     for input in [
         "R U F",
         "R U F R U F",
@@ -140,6 +140,6 @@ fn main() {
         "R U F R U F R U F2",
         "U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2",
     ] {
-        thistle_stuff(input);
+        thistle_stuff(input, &thistle_cache);
     }
 }

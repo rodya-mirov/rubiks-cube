@@ -27,6 +27,28 @@ const G2_FREE_DIRS: [Dir; 2] = [Dir::L, Dir::R];
 const G2_DOUBLE_DIRS: [Dir; 4] = [Dir::U, Dir::D, Dir::F, Dir::B];
 const ALL_AMTS: [Amt; 3] = [Amt::One, Amt::Two, Amt::Rev];
 
+fn can_follow(last: Option<Dir>, next: Dir) -> bool {
+    if last.is_none() {
+        return true;
+    }
+
+    let last = last.unwrap();
+
+    // can't repeat a direction, and if two directions commute, have to pick an order
+    // so with no significance -- B before F, L before R, D before U
+    if last == next {
+        false
+    } else if last == Dir::F && next == Dir::B {
+        false
+    } else if last == Dir::R && next == Dir::L {
+        false
+    } else if last == Dir::U && next == Dir::D {
+        false
+    } else {
+        true
+    }
+}
+
 /// This indicates what the cubelet "is;" or equivalently, where it belongs.
 /// 12 possible values, fits in a byte.
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
@@ -484,7 +506,7 @@ pub fn solve_to_g4(cube: &Cube) -> Vec<FullMove> {
         }
 
         for dir in ALL_DIRS {
-            if running.last().map(|fm| fm.dir) == Some(dir) {
+            if !can_follow(running.last().map(|fm| fm.dir), dir) {
                 continue;
             }
 
@@ -520,11 +542,13 @@ pub fn solve_to_g4(cube: &Cube) -> Vec<FullMove> {
 
     let start = Instant::now();
     for fuel in 0..=MAX_MOVES {
-        println!(
-            "Trying with fuel {} i guess (elapsed {:?})",
-            fuel,
-            start.elapsed()
-        );
+        if start.elapsed().as_millis() > 3000 {
+            println!(
+                "   Getting to G4 going slow ... trying with fuel {} i guess (elapsed {:?})",
+                fuel,
+                start.elapsed()
+            );
+        }
         let mut running = Vec::new();
         let solved = ida(&start_state, &mut running, fuel);
 
@@ -554,7 +578,7 @@ pub fn solve_to_g3(cube: &Cube, cache: &PosCache) -> Vec<FullMove> {
         }
 
         for dir in G2_DOUBLE_DIRS {
-            if running.last().map(|fm| fm.dir) == Some(dir) {
+            if !can_follow(running.last().map(|fm| fm.dir), dir) {
                 continue;
             }
 
@@ -611,11 +635,13 @@ pub fn solve_to_g3(cube: &Cube, cache: &PosCache) -> Vec<FullMove> {
 
     let start = Instant::now();
     for fuel in 0..=MAX_MOVES {
-        println!(
-            "Trying with fuel {} i guess (elapsed {:?})",
-            fuel,
-            start.elapsed()
-        );
+        if start.elapsed().as_millis() > 3000 {
+            println!(
+                "   Getting to G3 going slow ... trying with fuel {} i guess (elapsed {:?})",
+                fuel,
+                start.elapsed()
+            );
+        }
         let mut running = Vec::new();
         let solved = ida(&start_state, &mut running, fuel, cache);
 

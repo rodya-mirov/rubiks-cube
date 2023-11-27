@@ -82,4 +82,4 @@ mod g2g4;
 
 pub use g0g1::solve_to_g1;
 pub use g1g2::solve_to_g2;
-pub use g2g4::{enumerate_g3_pos, solve_to_g3, solve_to_g4};
+pub use g2g4::{enumerate_g3_pos, solve_to_g3, solve_to_g4, PosCache};
