@@ -468,7 +468,7 @@ impl CanMove for CubeCornerPositions {
 
 pub struct PosCache(HashSet<CubePositions, RandomState>);
 
-/// Takes about 650ms on my machine
+/// Takes about 650ms on my machine with stdlib hashmap
 ///     Down to 180ms with ahash
 pub fn enumerate_g3_pos() -> PosCache {
     let start: CubePositions = CubePositions::make_solved();
