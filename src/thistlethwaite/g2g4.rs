@@ -13,12 +13,12 @@
 //! all the facelets, since we can't really mess up the orientations once we're in G2.
 
 use std::collections::{HashSet, VecDeque};
-use std::time::Instant;
 
 use ahash::RandomState;
 
 use crate::cube::Cube;
 use crate::moves::{Amt, ApplyMove, Dir, FullMove};
+use crate::thistlethwaite::dfs_util;
 use crate::thistlethwaite::g2g4::state::{CubeCornerPositions, CubeEdgePositions, CubePositions};
 
 mod state;
@@ -27,29 +27,6 @@ const ALL_DIRS: [Dir; 6] = [Dir::U, Dir::D, Dir::B, Dir::F, Dir::L, Dir::R];
 
 const G2_FREE_DIRS: [Dir; 2] = [Dir::L, Dir::R];
 const G2_DOUBLE_DIRS: [Dir; 4] = [Dir::U, Dir::D, Dir::F, Dir::B];
-const ALL_AMTS: [Amt; 3] = [Amt::One, Amt::Two, Amt::Rev];
-
-fn can_follow(last: Option<Dir>, next: Dir) -> bool {
-    if last.is_none() {
-        return true;
-    }
-
-    let last = last.unwrap();
-
-    // can't repeat a direction, and if two directions commute, have to pick an order
-    // so with no significance -- B before F, L before R, D before U
-    if last == next {
-        false
-    } else if last == Dir::F && next == Dir::B {
-        false
-    } else if last == Dir::R && next == Dir::L {
-        false
-    } else if last == Dir::U && next == Dir::D {
-        false
-    } else {
-        true
-    }
-}
 
 pub struct PosCache {
     edges: HashSet<CubeEdgePositions, RandomState>,
@@ -95,162 +72,30 @@ pub fn enumerate_g3_pos() -> PosCache {
 }
 
 pub fn solve_to_g4(cube: &Cube) -> Vec<FullMove> {
-    // just solve positions using ID-DFS
-    let start_state = CubePositions::from_cube(cube);
-
-    // iterative-deepening DFS; returns true if it found a solution, or false if not
-    fn ida(cube: &CubePositions, running: &mut Vec<FullMove>, max_depth: usize) -> bool {
-        if cube.is_solved() {
-            return true;
-        } else if running.len() >= max_depth {
-            return false;
-        }
-
-        for dir in ALL_DIRS {
-            if !can_follow(running.last().map(|fm| fm.dir), dir) {
-                continue;
-            }
-
-            let amt = Amt::Two;
-
-            let fm = FullMove { amt, dir };
-
-            // TODO: make this next bit into a macro so I can reuse it?
-            let next = cube.clone().apply(fm);
-
-            // for WC there are so many blanks there is a good chance an individual move
-            // will be a no-op, so this cuts runtime by two thirds (!)
-            if &next == cube {
-                continue;
-            }
-
-            running.push(fm);
-
-            let found_solution = ida(&next, running, max_depth);
-
-            if found_solution {
-                return true;
-            }
-
-            running.pop();
-        }
-
-        false
-    }
-
-    // Magic math says this is the worst-possible solve length to get to solved
+    // Apparently you can solve G1 -> G2 in 10 moves, idk
     const MAX_MOVES: usize = 15;
 
-    let start = Instant::now();
-    for fuel in 0..=MAX_MOVES {
-        if start.elapsed().as_millis() > 3000 {
-            println!(
-                "   Getting to G4 going slow ... trying with fuel {} i guess (elapsed {:?})",
-                fuel,
-                start.elapsed()
-            );
-        }
-        let mut running = Vec::new();
-        let solved = ida(&start_state, &mut running, fuel);
-
-        if solved {
-            return running;
-        }
-    }
-
-    panic!("Couldn't solve it I guess lol")
+    dfs_util::solve(
+        cube,
+        &[],
+        &ALL_DIRS,
+        CubePositions::from_cube,
+        |s| s.is_solved(),
+        MAX_MOVES,
+    )
 }
 
 /// Given a cube in G2, solve to G3
 pub fn solve_to_g3(cube: &Cube, cache: &PosCache) -> Vec<FullMove> {
-    let start_state = CubePositions::from_cube(cube);
-
-    // iterative-deepening DFS; returns true if it found a solution, or false if not
-    fn ida(
-        cube: &CubePositions,
-        running: &mut Vec<FullMove>,
-        max_depth: usize,
-        cache: &PosCache,
-    ) -> bool {
-        if cache.full.contains(cube) {
-            return true;
-        } else if running.len() >= max_depth {
-            return false;
-        }
-
-        for dir in G2_DOUBLE_DIRS {
-            if !can_follow(running.last().map(|fm| fm.dir), dir) {
-                continue;
-            }
-
-            let amt = Amt::Two;
-
-            let fm = FullMove { amt, dir };
-
-            // TODO: make this next bit into a macro so I can reuse it?
-            let next = cube.clone().apply(fm);
-
-            // for WC there are so many blanks there is a good chance an individual move
-            // will be a no-op, so this cuts runtime by two thirds (!)
-            if &next == cube {
-                continue;
-            }
-
-            running.push(fm);
-
-            let found_solution = ida(&next, running, max_depth, cache);
-
-            if found_solution {
-                return true;
-            }
-
-            running.pop();
-        }
-
-        for dir in G2_FREE_DIRS.iter().copied() {
-            if !can_follow(running.last().map(|fm| fm.dir), dir) {
-                continue;
-            }
-
-            for amt in ALL_AMTS.iter().copied() {
-                let fm = FullMove { amt, dir };
-                let next = cube.clone().apply(fm);
-
-                running.push(fm);
-
-                let found_solution = ida(&next, running, max_depth, cache);
-
-                if found_solution {
-                    return true;
-                }
-
-                running.pop();
-            }
-        }
-
-        false
-    }
-
-    // Magic math says this is the worst-possible solve length to get to G3, and I hope I don't see
-    // it, because the branching factor is BAD (still 12 at this stage, and it's big enough)
+    // Apparently you can solve G1 -> G2 in 10 moves, idk
     const MAX_MOVES: usize = 13;
 
-    let start = Instant::now();
-    for fuel in 0..=MAX_MOVES {
-        if start.elapsed().as_millis() > 3000 {
-            println!(
-                "   Getting to G3 going slow ... trying with fuel {} i guess (elapsed {:?})",
-                fuel,
-                start.elapsed()
-            );
-        }
-        let mut running = Vec::new();
-        let solved = ida(&start_state, &mut running, fuel, cache);
-
-        if solved {
-            return running;
-        }
-    }
-
-    panic!("Couldn't solve it I guess lol")
+    dfs_util::solve(
+        cube,
+        &G2_FREE_DIRS,
+        &G2_DOUBLE_DIRS,
+        CubePositions::from_cube,
+        |s| cache.full.contains(s),
+        MAX_MOVES,
+    )
 }

@@ -1,5 +1,6 @@
 use crate::cube::{Cube, Facelet};
-use crate::moves::{Amt, ApplyMove, CanMove, Dir, FullMove};
+use crate::moves::{CanMove, Dir, FullMove};
+use crate::thistlethwaite::dfs_util;
 
 /// Invariants from a cube in G0 to describe what's left to get to G1
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -155,56 +156,18 @@ fn to_g1_invariant(cube: &Cube) -> G0State {
 }
 
 const ALL_DIRS: [Dir; 6] = [Dir::U, Dir::D, Dir::B, Dir::F, Dir::L, Dir::R];
-const ALL_AMTS: [Amt; 3] = [Amt::One, Amt::Two, Amt::Rev];
 
 /// Solves a given cube to G1. Assumes the input is in G0 (that is, solvable).
 pub fn solve_to_g1(cube: &Cube) -> Vec<FullMove> {
-    let state = to_g1_invariant(cube);
-
-    // iterative-deepening DFS; returns true if it found a solution, or false if not
-    fn ida(cube: &G0State, running: &mut Vec<FullMove>, max_depth: usize) -> bool {
-        if cube.is_solved() {
-            return true;
-        } else if running.len() >= max_depth {
-            return false;
-        }
-
-        for dir in ALL_DIRS.iter().copied() {
-            if running.last().map(|fm| fm.dir) == Some(dir) {
-                continue;
-            }
-
-            for amt in ALL_AMTS.iter().copied() {
-                let fm = FullMove { amt, dir };
-                let next = cube.clone().apply(fm);
-
-                running.push(fm);
-
-                let found_solution = ida(&next, running, max_depth);
-
-                if found_solution {
-                    return true;
-                }
-
-                running.pop();
-            }
-        }
-
-        false
-    }
-
     // Apparently you can solve G0 -> G1 in 7 moves, idk
     const MAX_MOVES: usize = 7;
 
-    for max_depth in 0..=MAX_MOVES {
-        let mut attempt = Vec::with_capacity(max_depth);
-
-        let found = ida(&state, &mut attempt, max_depth);
-
-        if found {
-            return attempt;
-        }
-    }
-
-    panic!("idk dude couldn't solve it in {MAX_MOVES} moves, maybe i'm broken")
+    dfs_util::solve(
+        cube,
+        &ALL_DIRS,
+        &[],
+        to_g1_invariant,
+        |s| s.is_solved(),
+        MAX_MOVES,
+    )
 }
