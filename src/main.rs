@@ -135,23 +135,23 @@ fn main() {
 
     for input in [
         // some hand-made examples i invented to get the basics going
-        // 96 microseconds (2/0/2/1)
+        // 73 microseconds (seriously) (2/0/2/1)
         "R U F",
-        // 22.18s (3/7/10/12) -- 21.52s in G2->G3 step
+        // 9.62s (3/7/10/12) -- 8.88s in G2->G3 step
         "R U F R U F",
         // 154ms (4/7/7/11)
         "R U F R U F R U F",
-        // 117ms (5/6/7/11)
+        // 120ms (5/6/7/11)
         "R U F R U F R U F2",
         // the "superflip"
-        // 303ms (7/5/8/11)
+        // 265ms (7/5/8/11)
         "U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2",
         // three random scrambles i got from a scrambler
-        // 51.74s (5/8/11/11) -- 49.81s in G2->G3 step
+        // 20.81s (5/8/11/11) -- 18.83s in G2->G3 step
         "B U F' L U R' L' F2 D' F2 L F' R' D L' D U2 R' U2 F' D' R2 F2 B' U2",
-        // 1.23s (5/8/8/10)
+        // 1.16s (5/8/8/10)
         "L U B2 F2 D' B' R U2 F B L' R2 U2 B' F2 R' U B' D' L U' F D F2 B",
-        // 4.06s (5/8/8/11)
+        // 4.00s (5/8/8/11)
         "B' L U2 R2 L' D L U F2 D' L2 D' L' R' B D' F2 B' U B' U L' U2 L F",
     ] {
         thistle_stuff(input, &thistle_cache);
