@@ -1,5 +1,8 @@
+use ahash::HashMap;
+use std::collections::VecDeque;
+
 use crate::cube::Cube;
-use crate::moves::CanMove;
+use crate::moves::{Amt, ApplyMove, CanMove, FullMove};
 use corner_state::CornersState;
 use edge_state::EdgesState;
 
@@ -7,7 +10,7 @@ mod corner_state {
     use crate::cube::{Cube, Facelet};
     use crate::moves::CanMove;
 
-    #[derive(Copy, Clone, Eq, PartialEq, Debug)]
+    #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
     enum CornerOrientation {
         Good,
         // means it has been rotated once CW
@@ -34,7 +37,7 @@ mod corner_state {
         }
     }
 
-    #[derive(Copy, Clone, Eq, PartialEq, Debug)]
+    #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
     pub struct CornersState {
         // each field is "this corner is in this orientation"
         // F corners
@@ -50,8 +53,9 @@ mod corner_state {
     }
 
     impl CornersState {
-        pub fn is_solved(&self) -> bool {
-            self == &Self {
+        #[inline(always)]
+        pub fn solved() -> Self {
+            Self {
                 ful: CornerOrientation::Good,
                 fur: CornerOrientation::Good,
                 fdl: CornerOrientation::Good,
@@ -61,6 +65,10 @@ mod corner_state {
                 bdl: CornerOrientation::Good,
                 bdr: CornerOrientation::Good,
             }
+        }
+
+        pub fn is_solved(&self) -> bool {
+            self == &Self::solved()
         }
 
         pub fn from_cube(cube: &Cube) -> CornersState {
@@ -171,7 +179,7 @@ mod edge_state {
     use crate::cube::{Cube, Facelet};
     use crate::moves::CanMove;
 
-    #[derive(Copy, Clone, Eq, PartialEq, Debug)]
+    #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
     pub struct EdgesState {
         // each field is "this edge belongs in the middle slice (not on L or R)"
         // top layer
@@ -192,8 +200,9 @@ mod edge_state {
     }
 
     impl EdgesState {
-        pub fn is_solved(&self) -> bool {
-            self == &Self {
+        #[inline(always)]
+        pub fn solved() -> Self {
+            Self {
                 uf: true,
                 ub: true,
                 ul: false,
@@ -207,6 +216,10 @@ mod edge_state {
                 dl: false,
                 dr: false,
             }
+        }
+
+        pub fn is_solved(&self) -> bool {
+            self == &Self::solved()
         }
 
         pub fn from_cube(cube: &Cube) -> EdgesState {
@@ -298,10 +311,10 @@ mod edge_state {
 }
 
 /// Invariants from a cube in G0 to describe what's left to get to G2
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
 pub struct G1State {
-    edges: EdgesState,
-    corners: CornersState,
+    pub edges: EdgesState,
+    pub corners: CornersState,
 }
 
 impl G1State {
@@ -366,5 +379,103 @@ impl CanMove for G1State {
             corners: self.corners.f(),
             edges: self.edges.f(),
         }
+    }
+}
+
+pub struct EdgeHeuristic {
+    known: HashMap<EdgesState, usize>,
+}
+
+impl EdgeHeuristic {
+    pub fn initialize() -> Self {
+        let mut known = HashMap::default();
+
+        let mut to_process = VecDeque::new();
+
+        to_process.push_back((EdgesState::solved(), 0));
+
+        while let Some((state, cost)) = to_process.pop_front() {
+            if known.contains_key(&state) {
+                continue;
+            }
+
+            known.insert(state.clone(), cost);
+
+            for dir in super::FREE_DIRS {
+                for amt in super::ALL_AMTS {
+                    let fm = FullMove { dir, amt };
+                    let next = state.clone().apply(fm);
+
+                    to_process.push_back((next, cost + 1));
+                }
+            }
+
+            for dir in super::HALF_DIRS {
+                let amt = Amt::Two;
+                let fm = FullMove { dir, amt };
+                let next = state.clone().apply(fm);
+
+                to_process.push_back((next, cost + 1));
+            }
+        }
+
+        Self { known }
+    }
+
+    pub fn evaluate(&self, edges: &EdgesState) -> usize {
+        if let Some(&cost) = self.known.get(edges) {
+            return cost;
+        }
+
+        panic!("Should have covered all possible cases");
+    }
+}
+
+pub struct CornerHeuristic {
+    known: HashMap<CornersState, usize>,
+}
+
+impl CornerHeuristic {
+    pub fn initialize() -> Self {
+        let mut known = HashMap::default();
+
+        let mut to_process = VecDeque::new();
+
+        to_process.push_back((CornersState::solved(), 0));
+
+        while let Some((state, cost)) = to_process.pop_front() {
+            if known.contains_key(&state) {
+                continue;
+            }
+
+            known.insert(state.clone(), cost);
+
+            for dir in super::FREE_DIRS {
+                for amt in super::ALL_AMTS {
+                    let fm = FullMove { dir, amt };
+                    let next = state.clone().apply(fm);
+
+                    to_process.push_back((next, cost + 1));
+                }
+            }
+
+            for dir in super::HALF_DIRS {
+                let amt = Amt::Two;
+                let fm = FullMove { dir, amt };
+                let next = state.clone().apply(fm);
+
+                to_process.push_back((next, cost + 1));
+            }
+        }
+
+        Self { known }
+    }
+
+    pub fn evaluate(&self, s: &CornersState) -> usize {
+        if let Some(&cost) = self.known.get(s) {
+            return cost;
+        }
+
+        panic!("Should have covered all possible cases");
     }
 }
