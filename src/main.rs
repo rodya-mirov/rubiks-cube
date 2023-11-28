@@ -6,13 +6,14 @@ use itertools::concat;
 use std::time::Instant;
 
 mod cube;
+mod heuristic_caches;
 mod moves;
 mod shadow;
 mod solve;
 mod thistlethwaite;
 mod timed;
 
-fn thistle_stuff(input: &str, thistle_cache: &thistlethwaite::PosCache) {
+fn thistle_stuff(input: &str, thistle_cache: &thistlethwaite::ThistlethwaiteCaches) {
     let start = Instant::now();
 
     println!();
@@ -21,45 +22,23 @@ fn thistle_stuff(input: &str, thistle_cache: &thistlethwaite::PosCache) {
     let thistle_problem =
         cube::Cube::make_solved(Facelet::Green, Facelet::Yellow).apply_many(&parse_many(input));
 
-    let g1_solution = timed("G0 to G1", || thistlethwaite::solve_to_g1(&thistle_problem));
-
-    println!(
-        "Found a solution for the G1 of length {}: {}",
-        g1_solution.len(),
-        to_nice_str(&g1_solution)
-    );
+    let (g1_dur, g1_solution) =
+        timed(|| thistlethwaite::solve_to_g1(&thistle_problem, &thistle_cache.g0g1cache));
 
     let g1_cube = thistle_problem.clone().apply_many(&g1_solution);
 
-    let g2_solution = timed("G1 to G2", || thistlethwaite::solve_to_g2(&g1_cube));
-
-    println!(
-        "Found a solution for the G2 of length {}: {}",
-        g2_solution.len(),
-        to_nice_str(&g2_solution)
-    );
+    let (g2_dur, g2_solution) =
+        timed(|| thistlethwaite::solve_to_g2(&g1_cube, &thistle_cache.g1g2cache));
 
     let g2_cube = g1_cube.clone().apply_many(&g2_solution);
 
-    let g3_solution = timed("G2 to G3", || {
-        thistlethwaite::solve_to_g3(&g2_cube, &thistle_cache)
-    });
-
-    println!(
-        "Found a solution for the G3 of length {}: {}",
-        g3_solution.len(),
-        to_nice_str(&g3_solution)
-    );
+    let (g3_dur, g3_solution) =
+        timed(|| thistlethwaite::solve_to_g3(&g2_cube, &thistle_cache.g2g3cache));
 
     let g3_cube = g2_cube.clone().apply_many(&g3_solution);
 
-    let g4_solution = timed("G3 to G4", || thistlethwaite::solve_to_g4(&g3_cube));
-
-    println!(
-        "Found a solution for the G4 of length {}: {}",
-        g4_solution.len(),
-        to_nice_str(&g4_solution)
-    );
+    let (g4_dur, g4_solution) =
+        timed(|| thistlethwaite::solve_to_g4(&g3_cube, &thistle_cache.g3g4cache));
 
     let g4_cube = g3_cube.clone().apply_many(&g4_solution);
 
@@ -68,15 +47,36 @@ fn thistle_stuff(input: &str, thistle_cache: &thistlethwaite::PosCache) {
         "Cube should be solved, that's the point"
     );
 
-    let total_solution: Vec<FullMove> =
-        concat([g1_solution, g2_solution, g3_solution, g4_solution]);
+    let total_solution: Vec<FullMove> = concat([
+        g1_solution.clone(),
+        g2_solution.clone(),
+        g3_solution.clone(),
+        g4_solution.clone(),
+    ]);
 
     println!(
-        "Total solution has {} moves: {}",
+        "Total solution has {}+{}+{}+{} == {} moves: {}",
+        g1_solution.len(),
+        g2_solution.len(),
+        g3_solution.len(),
+        g4_solution.len(),
         total_solution.len(),
         to_nice_str(&total_solution)
     );
-    println!("Finding that solution took {:?}", start.elapsed());
+    let timings = vec![
+        (g1_dur, "G0 to G1", g1_solution.len()),
+        (g2_dur, "G1 to G2", g2_solution.len()),
+        (g3_dur, "G2 to G3", g3_solution.len()),
+        (g4_dur, "G3 to G4", g4_solution.len()),
+    ];
+    let max_time = timings.iter().max().copied().unwrap();
+    println!(
+        "Total time was {:?}; Slowest stage was {} ({} moves) at {:?}",
+        start.elapsed(),
+        max_time.1,
+        max_time.2,
+        max_time.0
+    );
 }
 
 #[allow(unused)]
@@ -108,10 +108,11 @@ fn wc_stuff() {
     let bot_messed =
         cube::Cube::make_solved(Facelet::Green, Facelet::Yellow).apply_many(&parse_many(input));
 
-    let wc_solution = timed("Solving WC", || solve::solve_wc(bot_messed.clone()));
+    let (wc_dir, wc_solution) = timed(|| solve::solve_wc(bot_messed.clone()));
 
     println!(
-        "Found a solution for the white cross: {}",
+        "Found a solution for the white cross in {:?}: {}",
+        wc_dir,
         to_nice_str(&wc_solution)
     );
 
@@ -128,28 +129,38 @@ fn wc_stuff() {
 }
 
 fn thistle_suite() {
-    let thistle_cache = thistlethwaite::enumerate_g3_pos();
+    let start = Instant::now();
+    let thistle_cache = thistlethwaite::ThistlethwaiteCaches::initialize();
+
+    // currently about 809.681667ms, arguable if this is "cheating" or not
+    println!("Pre-populating the caches took {:?}", start.elapsed());
+
+    // Some notes -- I want to ensure we flex the maxima for each stage to ensure we're doing
+    // as well as we can. AFAIK the max length for each stage is:
+    //      G0 to G1 -- 7 moves (the superflip hits this)
+    //      G1 to G2 -- 10 moves (I don't have anything close to this; best I have is 8, with the long scrambles)
+    //      G2 to G3 -- 13 moves (I don't have anything close to this; best I have is 10, with R U F R U F)
+    //      G3 to G4 -- 15 moves (I don't have anything close to this; best I have is 12, with R U F R U F)
 
     for input in [
         // some hand-made examples i invented to get the basics going
-        // 8.0ms (2/0/2/1) -- note this is entirely setting up the heuristic cache, since
-        //                      the actual solve is trivial
+        // Total time was 43.875µs; Slowest stage was G2 to G3 (2 moves) at 20.958µs
         "R U F",
-        // 244ms (3/7/10/12) -- 233ms in G3 -> G4 step
+        // Total time was 6.927375ms; Slowest stage was G3 to G4 (12 moves) at 6.242792ms
         "R U F R U F",
-        // 45ms (4/7/7/11) -- 34ms in G3 -> G4
+        // Total time was 5.0325ms; Slowest stage was G3 to G4 (11 moves) at 2.397167ms
         "R U F R U F R U F",
-        // 37ms (5/6/7/11) -- 24ms in G3 -> G4
+        // Total time was 1.057542ms; Slowest stage was G3 to G4 (11 moves) at 870.75µs
         "R U F R U F R U F2",
         // the "superflip"
-        // 88ms (7/5/8/11) -- 50ms in G0 -> G1 step
+        // Total time was 992.125µs; Slowest stage was G3 to G4 (11 moves) at 955.708µs
         "U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2",
         // three random scrambles i got from a scrambler
-        // 165ms (5/8/11/11) -- 151ms in G3 -> G4 step
+        // Total time was 4.823542ms; Slowest stage was G3 to G4 (11 moves) at 2.645959ms
         "B U F' L U R' L' F2 D' F2 L F' R' D L' D U2 R' U2 F' D' R2 F2 B' U2",
-        // 16ms (5/8/8/10)
+        // Total time was 694.125µs; Slowest stage was G2 to G3 (8 moves) at 289.667µs
         "L U B2 F2 D' B' R U2 F B L' R2 U2 B' F2 R' U B' D' L U' F D F2 B",
-        // 52ms (5/8/8/11) -- 36ms in G3 -> G4 step
+        // Total time was 3.845375ms; Slowest stage was G1 to G2 (8 moves) at 2.321916ms
         "B' L U2 R2 L' D L U F2 D' L2 D' L' R' B D' F2 B' U B' U L' U2 L F",
     ] {
         thistle_stuff(input, &thistle_cache);

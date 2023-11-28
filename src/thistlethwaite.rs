@@ -81,6 +81,24 @@ mod g0g1;
 mod g1g2;
 mod g2g4;
 
-pub use g0g1::solve_to_g1;
-pub use g1g2::solve_to_g2;
-pub use g2g4::{enumerate_g3_pos, solve_to_g3, solve_to_g4, PosCache};
+pub use g0g1::{solve_to_g1, G0toG1Cache};
+pub use g1g2::{solve_to_g2, G1toG2Cache};
+pub use g2g4::{enumerate_g3_pos, solve_to_g3, solve_to_g4, G3toG4Cache, PosCache};
+
+pub struct ThistlethwaiteCaches {
+    pub g0g1cache: G0toG1Cache,
+    pub g1g2cache: G1toG2Cache,
+    pub g2g3cache: PosCache,
+    pub g3g4cache: G3toG4Cache,
+}
+
+impl ThistlethwaiteCaches {
+    pub fn initialize() -> Self {
+        Self {
+            g0g1cache: G0toG1Cache::initialize(),
+            g1g2cache: G1toG2Cache::initialize(),
+            g2g3cache: enumerate_g3_pos(),
+            g3g4cache: G3toG4Cache::initialize(),
+        }
+    }
+}

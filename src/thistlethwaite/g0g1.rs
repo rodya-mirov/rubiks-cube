@@ -1,9 +1,10 @@
 use crate::cube::{Cube, Facelet};
+use crate::heuristic_caches::HeuristicCache;
 use crate::moves::{CanMove, Dir, FullMove};
 use crate::thistlethwaite::dfs_util;
 
 /// Invariants from a cube in G0 to describe what's left to get to G1
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
 struct G0State {
     // each field is "this edge is good"
     // top layer
@@ -24,6 +25,24 @@ struct G0State {
 }
 
 impl G0State {
+    #[inline(always)]
+    fn make_solved() -> Self {
+        Self {
+            uf: true,
+            ub: true,
+            ul: true,
+            ur: true,
+            fl: true,
+            fr: true,
+            bl: true,
+            br: true,
+            df: true,
+            db: true,
+            dl: true,
+            dr: true,
+        }
+    }
+
     fn is_solved(&self) -> bool {
         self.uf
             && self.ub
@@ -157,16 +176,30 @@ fn to_g1_invariant(cube: &Cube) -> G0State {
 
 const ALL_DIRS: [Dir; 6] = [Dir::U, Dir::D, Dir::B, Dir::F, Dir::L, Dir::R];
 
+pub struct G0toG1Cache {
+    heuristic_cache: HeuristicCache<G0State>,
+}
+
+impl G0toG1Cache {
+    pub fn initialize() -> Self {
+        G0toG1Cache {
+            heuristic_cache: HeuristicCache::from_goal(G0State::make_solved(), &ALL_DIRS, &[]),
+        }
+    }
+}
+
 /// Solves a given cube to G1. Assumes the input is in G0 (that is, solvable).
-pub fn solve_to_g1(cube: &Cube) -> Vec<FullMove> {
-    const MAX_MOVES: usize = 7;
+pub fn solve_to_g1(cube: &Cube, cache: &G0toG1Cache) -> Vec<FullMove> {
+    // note: this should be 7? i'm not sure why i need to bump it to 8? it doesn't really matter,
+    // it's still finding correct answers, but there's something funny here
+    const MAX_MOVES: usize = 8;
 
     dfs_util::solve(
         to_g1_invariant(cube),
         &ALL_DIRS,
         &[],
         |s| s.is_solved(),
-        |_| 0,
+        |s| cache.heuristic_cache.evaluate(s),
         MAX_MOVES,
     )
 }
