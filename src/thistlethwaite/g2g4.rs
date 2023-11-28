@@ -33,7 +33,6 @@ const ALL_AMTS: [Amt; 3] = [Amt::One, Amt::Two, Amt::Rev];
 pub struct PosCache {
     edges: HashSet<CubeEdgePositions>,
     corners: HashSet<CubeCornerPositions>,
-    full: HashSet<CubePositions>,
 }
 
 /// Takes about 650ms on my machine with stdlib hashmap
@@ -66,14 +65,18 @@ pub fn enumerate_g3_pos() -> PosCache {
         corner_states.insert(state.corners);
     }
 
+    // This just sort of makes me happy to double-check
+    assert_eq!(edge_states.len() * corner_states.len(), full_states.len());
+
     PosCache {
         edges: edge_states,
         corners: corner_states,
-        full: full_states,
     }
 }
 
 pub fn solve_to_g4(cube: &Cube) -> Vec<FullMove> {
+    let corner_heuristic = CornerPosHeuristicIntoG4::initialize();
+
     const MAX_MOVES: usize = 15;
 
     dfs_util::solve(
@@ -81,7 +84,7 @@ pub fn solve_to_g4(cube: &Cube) -> Vec<FullMove> {
         &[],
         &ALL_DIRS,
         |s| s.is_solved(),
-        |_| 0,
+        |s| corner_heuristic.evaluate(&s.corners),
         MAX_MOVES,
     )
 }
@@ -135,7 +138,55 @@ impl CornerPosHeuristicIntoG3 {
         Self { known_costs }
     }
 
-    fn evaluate(&mut self, edge_pos: &CubeCornerPositions) -> usize {
+    fn evaluate(&self, edge_pos: &CubeCornerPositions) -> usize {
+        if let Some(&cost) = self.known_costs.get(&edge_pos) {
+            return cost;
+        }
+
+        panic!("Should have covered everything really nicely");
+    }
+}
+
+// currently focusing on corners; there are, like, too many edges
+struct CornerPosHeuristicIntoG4 {
+    known_costs: HashMap<CubeCornerPositions, usize>,
+}
+
+impl CornerPosHeuristicIntoG4 {
+    fn initialize() -> Self {
+        let mut known_costs = HashMap::default();
+
+        // we don't want to do DFS here -- instead, we'll actually iterate through and find every
+        // single accessible position and the cost to get there
+
+        let mut to_process: VecDeque<(CubeCornerPositions, usize)> = VecDeque::new();
+
+        to_process.push_back((CubeCornerPositions::make_solved(), 0));
+
+        while let Some((pos, cost)) = to_process.pop_front() {
+            let existing = known_costs.get(&pos);
+            // note that by use of the VecDeque as a queue, we guarantee that we generate everything
+            // in the most efficient manner possible, so if we've seen it before, this is not an
+            // improvement on the previous
+            if existing.is_some() {
+                continue;
+            }
+
+            known_costs.insert(pos.clone(), cost);
+
+            for dir in ALL_DIRS {
+                let amt = Amt::Two;
+                let fm = FullMove { dir, amt };
+                let next = pos.clone().apply(fm);
+                let next_cost = cost + 1;
+                to_process.push_back((next, next_cost));
+            }
+        }
+
+        Self { known_costs }
+    }
+
+    fn evaluate(&self, edge_pos: &CubeCornerPositions) -> usize {
         if let Some(&cost) = self.known_costs.get(&edge_pos) {
             return cost;
         }
@@ -151,13 +202,13 @@ pub fn solve_to_g3(cube: &Cube, cache: &PosCache) -> Vec<FullMove> {
     // TODO: get edges in here too
     // Setting up corner heuristic takes about 7ms; for purity reasons we should precompute
     // and save it somewhere, but like ... who cares
-    let mut corner_heuristic = CornerPosHeuristicIntoG3::from_set(&cache.corners);
+    let corner_heuristic = CornerPosHeuristicIntoG3::from_set(&cache.corners);
 
     dfs_util::solve(
         CubePositions::from_cube(cube),
         &G2_FREE_DIRS,
         &G2_DOUBLE_DIRS,
-        |s| cache.full.contains(s),
+        |s| cache.edges.contains(&s.edges) && cache.corners.contains(&s.corners),
         |c| corner_heuristic.evaluate(&c.corners),
         MAX_MOVES,
     )

@@ -132,24 +132,24 @@ fn thistle_suite() {
 
     for input in [
         // some hand-made examples i invented to get the basics going
-        // 8.2ms (2/0/2/1) -- note this is entirely setting up the heuristic cache, since
+        // 8.0ms (2/0/2/1) -- note this is entirely setting up the heuristic cache, since
         //                      the actual solve is trivial
         "R U F",
-        // 492ms (3/7/10/12) -- 481ms in G3 -> G4 step
+        // 244ms (3/7/10/12) -- 233ms in G3 -> G4 step
         "R U F R U F",
-        // 95ms (4/7/7/11)
+        // 45ms (4/7/7/11) -- 34ms in G3 -> G4
         "R U F R U F R U F",
-        // 85ms (5/6/7/11)
+        // 37ms (5/6/7/11) -- 24ms in G3 -> G4
         "R U F R U F R U F2",
         // the "superflip"
-        // 138ms (7/5/8/11)
+        // 88ms (7/5/8/11) -- 50ms in G0 -> G1 step
         "U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2",
         // three random scrambles i got from a scrambler
-        // 249ms (5/8/11/11) -- 234ms in G3 -> G4 step
+        // 165ms (5/8/11/11) -- 151ms in G3 -> G4 step
         "B U F' L U R' L' F2 D' F2 L F' R' D L' D U2 R' U2 F' D' R2 F2 B' U2",
-        // 27.4ms (5/8/8/10)
+        // 16ms (5/8/8/10)
         "L U B2 F2 D' B' R U2 F B L' R2 U2 B' F2 R' U B' D' L U' F D F2 B",
-        // 104ms (5/8/8/11) -- 89ms in G3 -> G4 step
+        // 52ms (5/8/8/11) -- 36ms in G3 -> G4 step
         "B' L U2 R2 L' D L U F2 D' L2 D' L' R' B D' F2 B' U B' U L' U2 L F",
     ] {
         thistle_stuff(input, &thistle_cache);
