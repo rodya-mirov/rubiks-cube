@@ -168,6 +168,7 @@ pub fn solve_to_g1(cube: &Cube) -> Vec<FullMove> {
         &[],
         to_g1_invariant,
         |s| s.is_solved(),
+        |_| 0,
         MAX_MOVES,
     )
 }

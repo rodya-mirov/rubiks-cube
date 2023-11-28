@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use crate::cube::Cube;
 use crate::moves::{Amt, ApplyMove, CanMove, Dir, FullMove};
 
@@ -31,48 +29,77 @@ pub fn solve<
     StateType: CanMove + Clone,
     ToState: FnOnce(&Cube) -> StateType,
     IsSolved: Fn(&StateType) -> bool,
+    CostHeuristic: Fn(&StateType) -> usize,
 >(
     cube: &Cube,
     free_dirs: &[Dir],
     half_move_dirs: &[Dir],
     to_state: ToState,
     is_solved: IsSolved,
+    cost_heuristic: CostHeuristic,
     max_fuel: usize,
 ) -> Vec<FullMove> {
     let start_state = to_state(cube);
 
-    struct IdaState<'a, StateType: CanMove, IsSolved: Fn(&StateType) -> bool> {
+    struct IdaState<'a, IsSolved, CostHeuristic> {
         free_dirs: &'a [Dir],
         half_move_dirs: &'a [Dir],
-        st: PhantomData<StateType>,
         is_solved: IsSolved,
+        cost_heuristic: CostHeuristic,
     }
 
-    impl<'a, StateType: CanMove + Clone, IsSolved: Fn(&StateType) -> bool>
-        IdaState<'a, StateType, IsSolved>
-    {
-        fn ida(&self, cube: &StateType, running: &mut Vec<FullMove>, max_depth: usize) -> bool {
-            if (self.is_solved)(cube) {
-                return true;
-            } else if running.len() >= max_depth {
-                return false;
+    fn ida<
+        'a,
+        StateType: CanMove + Clone,
+        IsSolved: Fn(&StateType) -> bool,
+        CostHeuristic: Fn(&StateType) -> usize,
+    >(
+        ida_state: &IdaState<'a, IsSolved, CostHeuristic>,
+        cube: &StateType,
+        running: &mut Vec<FullMove>,
+        max_depth: usize,
+    ) -> bool {
+        if (ida_state.is_solved)(cube) {
+            return true;
+        } else if running.len() >= max_depth {
+            return false;
+        }
+
+        // todo: the insides of these two loops are really similar
+        for dir in ida_state.half_move_dirs.iter().copied() {
+            if !can_follow(running.last().map(|fm| fm.dir), dir) {
+                continue;
             }
 
-            // todo: the insides of these two loops are really similar
-            for dir in self.half_move_dirs.iter().copied() {
-                if !can_follow(running.last().map(|fm| fm.dir), dir) {
-                    continue;
-                }
+            let amt = Amt::Two;
 
-                let amt = Amt::Two;
+            let fm = FullMove { amt, dir };
 
+            let next = cube.clone().apply(fm);
+
+            running.push(fm);
+
+            let found_solution = ida(ida_state, &next, running, max_depth);
+
+            if found_solution {
+                return true;
+            }
+
+            running.pop();
+        }
+
+        for dir in ida_state.free_dirs.iter().copied() {
+            if !can_follow(running.last().map(|fm| fm.dir), dir) {
+                continue;
+            }
+
+            for amt in ALL_AMTS.iter().copied() {
                 let fm = FullMove { amt, dir };
-
                 let next = cube.clone().apply(fm);
 
                 running.push(fm);
 
-                let found_solution = self.ida(&next, running, max_depth);
+                let found_solution = ida(ida_state, &next, running, max_depth);
 
                 if found_solution {
                     return true;
@@ -80,42 +107,21 @@ pub fn solve<
 
                 running.pop();
             }
-
-            for dir in self.free_dirs.iter().copied() {
-                if !can_follow(running.last().map(|fm| fm.dir), dir) {
-                    continue;
-                }
-
-                for amt in ALL_AMTS.iter().copied() {
-                    let fm = FullMove { amt, dir };
-                    let next = cube.clone().apply(fm);
-
-                    running.push(fm);
-
-                    let found_solution = self.ida(&next, running, max_depth);
-
-                    if found_solution {
-                        return true;
-                    }
-
-                    running.pop();
-                }
-            }
-
-            false
         }
+
+        false
     }
 
     let ida_state = IdaState {
         free_dirs,
         half_move_dirs,
-        st: Default::default(),
         is_solved,
+        cost_heuristic,
     };
 
     for fuel in 0..=max_fuel {
         let mut running = Vec::new();
-        let solved = ida_state.ida(&start_state, &mut running, fuel);
+        let solved = ida(&ida_state, &start_state, &mut running, fuel);
 
         if solved {
             return running;

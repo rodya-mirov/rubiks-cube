@@ -81,6 +81,7 @@ pub fn solve_to_g4(cube: &Cube) -> Vec<FullMove> {
         &ALL_DIRS,
         CubePositions::from_cube,
         |s| s.is_solved(),
+        |_| 0,
         MAX_MOVES,
     )
 }
@@ -96,6 +97,7 @@ pub fn solve_to_g3(cube: &Cube, cache: &PosCache) -> Vec<FullMove> {
         &G2_DOUBLE_DIRS,
         CubePositions::from_cube,
         |s| cache.full.contains(s),
+        |_| 0,
         MAX_MOVES,
     )
 }

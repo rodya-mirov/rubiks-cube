@@ -19,6 +19,7 @@ pub fn solve_to_g2(cube: &Cube) -> Vec<FullMove> {
         &[Dir::U, Dir::D],
         G1State::from_cube,
         |s| s.is_solved(),
+        |_| 0,
         MAX_MOVES,
     )
 }
