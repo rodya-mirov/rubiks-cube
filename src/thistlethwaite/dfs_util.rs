@@ -1,4 +1,3 @@
-use crate::cube::Cube;
 use crate::moves::{Amt, ApplyMove, CanMove, Dir, FullMove};
 
 const ALL_AMTS: [Amt; 3] = [Amt::One, Amt::Two, Amt::Rev];
@@ -27,20 +26,16 @@ fn can_follow(last: Option<Dir>, next: Dir) -> bool {
 
 pub fn solve<
     StateType: CanMove + Clone,
-    ToState: FnOnce(&Cube) -> StateType,
     IsSolved: Fn(&StateType) -> bool,
-    CostHeuristic: Fn(&StateType) -> usize,
+    CostHeuristic: FnMut(&StateType) -> usize,
 >(
-    cube: &Cube,
+    start_state: StateType,
     free_dirs: &[Dir],
     half_move_dirs: &[Dir],
-    to_state: ToState,
     is_solved: IsSolved,
     cost_heuristic: CostHeuristic,
     max_fuel: usize,
 ) -> Vec<FullMove> {
-    let start_state = to_state(cube);
-
     struct IdaState<'a, IsSolved, CostHeuristic> {
         free_dirs: &'a [Dir],
         half_move_dirs: &'a [Dir],
@@ -48,20 +43,24 @@ pub fn solve<
         cost_heuristic: CostHeuristic,
     }
 
+    // TODO perf: strictly speaking we are able to increment the max_depth a little faster
+    //      if we jump to "lowest cost of a pruned node" instead of just going up by one, but it's
+    //      code complexity I don't yet want to deal with
+
     fn ida<
         'a,
         StateType: CanMove + Clone,
         IsSolved: Fn(&StateType) -> bool,
-        CostHeuristic: Fn(&StateType) -> usize,
+        CostHeuristic: FnMut(&StateType) -> usize,
     >(
-        ida_state: &IdaState<'a, IsSolved, CostHeuristic>,
+        ida_state: &mut IdaState<'a, IsSolved, CostHeuristic>,
         cube: &StateType,
         running: &mut Vec<FullMove>,
         max_depth: usize,
     ) -> bool {
         if (ida_state.is_solved)(cube) {
             return true;
-        } else if running.len() >= max_depth {
+        } else if running.len() + (ida_state.cost_heuristic)(cube) >= max_depth {
             return false;
         }
 
@@ -112,7 +111,8 @@ pub fn solve<
         false
     }
 
-    let ida_state = IdaState {
+    // needs to be mutable because the cost heuristic is stateful
+    let mut ida_state = IdaState {
         free_dirs,
         half_move_dirs,
         is_solved,
@@ -121,7 +121,7 @@ pub fn solve<
 
     for fuel in 0..=max_fuel {
         let mut running = Vec::new();
-        let solved = ida(&ida_state, &start_state, &mut running, fuel);
+        let solved = ida(&mut ida_state, &start_state, &mut running, fuel);
 
         if solved {
             return running;

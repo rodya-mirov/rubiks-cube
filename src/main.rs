@@ -127,33 +127,38 @@ fn wc_stuff() {
     );
 }
 
-fn main() {
-    // this is just debug stuff, uncomment to allow
-    // wc_stuff();
-
+fn thistle_suite() {
     let thistle_cache = thistlethwaite::enumerate_g3_pos();
 
     for input in [
         // some hand-made examples i invented to get the basics going
-        // 73 microseconds (seriously) (2/0/2/1)
+        // 7.4ms (2/0/2/1) -- note this is entirely setting up the heuristic cache, since
+        //                      the actual solve is trivial
         "R U F",
-        // 9.62s (3/7/10/12) -- 8.88s in G2->G3 step
+        // 560ms (3/7/10/12) -- 476ms in G2->G3 step
         "R U F R U F",
-        // 154ms (4/7/7/11)
+        // 110ms (4/7/7/11)
         "R U F R U F R U F",
-        // 120ms (5/6/7/11)
+        // 91ms (5/6/7/11)
         "R U F R U F R U F2",
         // the "superflip"
-        // 265ms (7/5/8/11)
+        // 137ms (7/5/8/11)
         "U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2",
         // three random scrambles i got from a scrambler
-        // 20.81s (5/8/11/11) -- 18.83s in G2->G3 step
+        // 941ms (5/8/11/11) -- 696ms in G1->G2 step
         "B U F' L U R' L' F2 D' F2 L F' R' D L' D U2 R' U2 F' D' R2 F2 B' U2",
-        // 1.16s (5/8/8/10)
+        // 449s (5/8/8/10)
         "L U B2 F2 D' B' R U2 F B L' R2 U2 B' F2 R' U B' D' L U' F D F2 B",
-        // 4.00s (5/8/8/11)
+        // 1.52s (5/8/8/11) -- 1.41s in G1->G2 step
         "B' L U2 R2 L' D L U F2 D' L2 D' L' R' B D' F2 B' U B' U L' U2 L F",
     ] {
         thistle_stuff(input, &thistle_cache);
     }
+}
+
+fn main() {
+    // this is just debug stuff, uncomment to allow
+    // wc_stuff();
+
+    thistle_suite();
 }
