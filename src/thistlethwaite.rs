@@ -76,7 +76,6 @@
 //!
 //!         TODO: ugh I still don't understand G3 well enough to explain it
 
-mod dfs_util;
 mod g0g1;
 mod g1g2;
 mod g2g4;

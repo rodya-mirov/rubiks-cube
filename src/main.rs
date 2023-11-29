@@ -5,7 +5,11 @@ use crate::timed::timed;
 use itertools::concat;
 use std::time::Instant;
 
+mod corner_orientation_state;
 mod cube;
+mod dfs_util;
+mod edge_orientation_state;
+mod edge_slice_state;
 mod heuristic_caches;
 mod moves;
 mod shadow;

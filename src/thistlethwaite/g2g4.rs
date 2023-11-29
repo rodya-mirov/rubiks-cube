@@ -18,9 +18,9 @@ use std::collections::VecDeque;
 use ahash::HashSet;
 
 use crate::cube::Cube;
+use crate::dfs_util;
 use crate::heuristic_caches::HeuristicCache;
 use crate::moves::{Amt, ApplyMove, Dir, FullMove};
-use crate::thistlethwaite::dfs_util;
 use crate::thistlethwaite::g2g4::state::{CubeCornerPositions, CubeEdgePositions, CubePositions};
 
 mod state;
