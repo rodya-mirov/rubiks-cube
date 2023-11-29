@@ -5,7 +5,7 @@ use crate::cube::{Cube, Facelet};
 use crate::moves::CanMove;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
-pub struct EdgesState {
+pub struct EdgeMidSliceState {
     // each field is "this edge belongs in the middle slice (not on L or R)"
     // top layer
     uf: bool,
@@ -24,7 +24,7 @@ pub struct EdgesState {
     dr: bool,
 }
 
-impl EdgesState {
+impl EdgeMidSliceState {
     #[inline(always)]
     pub fn solved() -> Self {
         Self {
@@ -47,14 +47,14 @@ impl EdgesState {
         self == &Self::solved()
     }
 
-    pub fn from_cube(cube: &Cube) -> EdgesState {
+    pub fn from_cube(cube: &Cube) -> EdgeMidSliceState {
         let l_color = cube.l.cc.clone();
         let r_color = cube.r.cc.clone();
         let is_lr_color = |f: &Facelet| f == &l_color || f == &r_color;
         // you belong in the middle if neither facelet is from a side
         let is_mid_slice = |a: &Facelet, b: &Facelet| !is_lr_color(a) && !is_lr_color(b);
 
-        EdgesState {
+        EdgeMidSliceState {
             uf: is_mid_slice(&cube.u.fc, &cube.f.uc),
             ub: is_mid_slice(&cube.u.bc, &cube.b.uc),
             ul: is_mid_slice(&cube.u.lc, &cube.l.uc),
@@ -72,9 +72,9 @@ impl EdgesState {
 }
 
 // all simple permutations, no tricks with this
-impl CanMove for EdgesState {
+impl CanMove for EdgeMidSliceState {
     fn r(self) -> Self {
-        EdgesState {
+        EdgeMidSliceState {
             ur: self.fr,
             fr: self.dr,
             dr: self.br,
@@ -84,7 +84,7 @@ impl CanMove for EdgesState {
     }
 
     fn l(self) -> Self {
-        EdgesState {
+        EdgeMidSliceState {
             ul: self.bl,
             bl: self.dl,
             dl: self.fl,
@@ -94,7 +94,7 @@ impl CanMove for EdgesState {
     }
 
     fn u(self) -> Self {
-        EdgesState {
+        EdgeMidSliceState {
             uf: self.ur,
             ur: self.ub,
             ub: self.ul,
@@ -104,17 +104,17 @@ impl CanMove for EdgesState {
     }
 
     fn d(self) -> Self {
-        EdgesState {
-            df: self.dr,
-            dr: self.db,
-            db: self.dl,
-            dl: self.df,
+        EdgeMidSliceState {
+            df: self.dl,
+            dl: self.db,
+            db: self.dr,
+            dr: self.df,
             ..self
         }
     }
 
     fn b(self) -> Self {
-        EdgesState {
+        EdgeMidSliceState {
             ub: self.br,
             br: self.db,
             db: self.bl,
@@ -124,7 +124,7 @@ impl CanMove for EdgesState {
     }
 
     fn f(self) -> Self {
-        EdgesState {
+        EdgeMidSliceState {
             uf: self.fl,
             fl: self.df,
             df: self.fr,

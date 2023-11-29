@@ -26,9 +26,6 @@ where
     ) -> Self {
         let mut known_costs = HashMap::default();
 
-        // we don't want to do DFS here -- instead, we'll actually iterate through and find every
-        // single accessible position and the cost to get there
-
         let mut to_process: VecDeque<(StateType, usize)> = VecDeque::new();
 
         for c in goal_states {

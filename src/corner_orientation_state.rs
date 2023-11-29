@@ -32,7 +32,7 @@ impl CornerOrientation {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
-pub struct CornersState {
+pub struct CornerOrientationState {
     // each field is "this corner is in this orientation"
     // F corners
     ful: CornerOrientation,
@@ -46,7 +46,7 @@ pub struct CornersState {
     bdr: CornerOrientation,
 }
 
-impl CornersState {
+impl CornerOrientationState {
     #[inline(always)]
     pub fn solved() -> Self {
         Self {
@@ -65,7 +65,7 @@ impl CornersState {
         self == &Self::solved()
     }
 
-    pub fn from_cube(cube: &Cube) -> CornersState {
+    pub fn from_cube(cube: &Cube) -> CornerOrientationState {
         let l_color = cube.l.cc.clone();
         let r_color = cube.r.cc.clone();
         let is_lr_color = |f: &Facelet| f == &l_color || f == &r_color;
@@ -82,7 +82,7 @@ impl CornersState {
             }
         };
 
-        CornersState {
+        CornerOrientationState {
             ful: orientation(&cube.l.uf, &cube.u.fl),
             fur: orientation(&cube.r.uf, &cube.f.ur),
             fdl: orientation(&cube.l.df, &cube.f.dl),
@@ -95,9 +95,9 @@ impl CornersState {
     }
 }
 
-impl CanMove for CornersState {
+impl CanMove for CornerOrientationState {
     fn r(self) -> Self {
-        CornersState {
+        CornerOrientationState {
             // simple rotation of the r-corners; no orientation change
             fur: self.fdr,
             fdr: self.bdr,
@@ -108,7 +108,7 @@ impl CanMove for CornersState {
     }
 
     fn l(self) -> Self {
-        CornersState {
+        CornerOrientationState {
             // simple rotation of the l-corners; no orientation change
             ful: self.bul,
             bul: self.bdl,
@@ -119,11 +119,17 @@ impl CanMove for CornersState {
     }
 
     fn u(self) -> Self {
-        panic!("U is not allowed");
+        CornerOrientationState {
+            ful: self.fur.ccw(),
+            fur: self.bur.cw(),
+            bur: self.bul.ccw(),
+            bul: self.ful.cw(),
+            ..self
+        }
     }
 
     fn u_two(self) -> Self {
-        CornersState {
+        CornerOrientationState {
             // U alters the orientation of the affected cubelets in a way that is sort of weird
             // but we're not allowed to use it anymore; U2 is a simple swap
             ful: self.bur,
@@ -135,7 +141,7 @@ impl CanMove for CornersState {
     }
 
     fn d(self) -> Self {
-        CornersState {
+        CornerOrientationState {
             // D alters the orientation of the affected cubelets in a way that is sort of weird
             fdl: self.bdl.cw(),
             bdl: self.bdr.ccw(),
@@ -146,7 +152,7 @@ impl CanMove for CornersState {
     }
 
     fn b(self) -> Self {
-        CornersState {
+        CornerOrientationState {
             // B alters the orientation of the affected cubelets in a way that is sort of weird
             bul: self.bur.ccw(),
             bur: self.bdr.cw(),
@@ -157,7 +163,7 @@ impl CanMove for CornersState {
     }
 
     fn f(self) -> Self {
-        CornersState {
+        CornerOrientationState {
             // F alters the orientation of the affected cubelets in a way that is sort of weird
             ful: self.fdl.cw(),
             fdl: self.fdr.ccw(),

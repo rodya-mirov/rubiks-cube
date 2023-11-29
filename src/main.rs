@@ -1,8 +1,11 @@
 use std::time::Instant;
 
+use crate::corner_orientation_state::CornerOrientationState;
 use itertools::concat;
 
 use crate::cube::Facelet;
+use crate::edge_orientation_state::EdgeOrientationState;
+use crate::edge_slice_state::EdgeMidSliceState;
 use crate::moves::{parse_many, to_nice_str, ApplyMove, FullMove};
 use crate::shadow::to_white_cross;
 use crate::timed::timed;
@@ -23,11 +26,63 @@ mod thistlethwaite;
 mod timed;
 mod total_position_state;
 
-fn thistle_stuff(input: &str, thistle_cache: &thistlethwaite::ThistlethwaiteCaches) {
+fn kociemba_stuff(input: &str, kociemba_cache: &kociemba::KociembaCaches) {
     let start = Instant::now();
 
-    println!();
-    println!("For thistlethwaite, starting with scramble: {}", input);
+    let kociemba_problem =
+        cube::Cube::make_solved(Facelet::Green, Facelet::Yellow).apply_many(&parse_many(input));
+
+    let (h1_dur, h1_solution) =
+        timed(|| kociemba::solve_to_h1(&kociemba_problem, &kociemba_cache.h0h1cache));
+
+    let h1_cube = kociemba_problem.clone().apply_many(&h1_solution);
+
+    assert!(
+        EdgeOrientationState::from_cube(&h1_cube).is_solved(),
+        "Should be edge orientated"
+    );
+    assert!(
+        CornerOrientationState::from_cube(&h1_cube).is_solved(),
+        "Should be corner orientated"
+    );
+    assert!(
+        EdgeMidSliceState::from_cube(&h1_cube).is_solved(),
+        "Should be mid-slice satisfied"
+    );
+
+    let (h2_dur, h2_solution) =
+        timed(|| kociemba::solve_to_h2(&h1_cube, &kociemba_cache.h1h2cache));
+
+    let h2_cube = h1_cube.clone().apply_many(&h2_solution);
+
+    let total_solution: Vec<FullMove> = concat([h1_solution.clone(), h2_solution.clone()]);
+
+    println!(
+        "Total solution has {}+{} == {} moves: {}",
+        h1_solution.len(),
+        h2_solution.len(),
+        total_solution.len(),
+        to_nice_str(&total_solution)
+    );
+
+    let timings = vec![
+        (h1_dur, "H0 to H1", h1_solution.len()),
+        (h2_dur, "H1 to H2", h2_solution.len()),
+    ];
+    let max_time = timings.iter().max().copied().unwrap();
+    println!(
+        "Total time was {:?}; Slowest stage was {} ({} moves) at {:?}",
+        start.elapsed(),
+        max_time.1,
+        max_time.2,
+        max_time.0
+    );
+
+    assert!(h2_cube.is_solved());
+}
+
+fn thistle_stuff(input: &str, thistle_cache: &thistlethwaite::ThistlethwaiteCaches) {
+    let start = Instant::now();
 
     let thistle_problem =
         cube::Cube::make_solved(Facelet::Green, Facelet::Yellow).apply_many(&parse_many(input));
@@ -138,6 +193,39 @@ fn wc_stuff() {
     );
 }
 
+#[allow(unused)]
+fn kociemba_suite() {
+    let start = Instant::now();
+    let kociemba_cache = kociemba::KociembaCaches::initialize();
+
+    // currently about 809.681667ms, arguable if this is "cheating" or not
+    println!("Pre-populating the caches took {:?}", start.elapsed());
+
+    // Some notes -- I want to ensure we flex the maxima for each stage to ensure we're doing
+    // as well as we can. AFAIK the max length for each stage is:
+    //      G0 to G1 -- 7 moves (the superflip hits this)
+    //      G1 to G2 -- 10 moves (I don't have anything close to this; best I have is 8, with the long scrambles)
+    //      G2 to G3 -- 13 moves (I don't have anything close to this; best I have is 10, with R U F R U F)
+    //      G3 to G4 -- 15 moves (I don't have anything close to this; best I have is 12, with R U F R U F)
+
+    for input in [
+        // some hand-made examples i invented to get the basics going
+        "R U F",
+        "R U F R U F",
+        "R U F R U F R U F",
+        "R U F R U F R U F2",
+        // the "superflip"
+        "U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2",
+        // three random scrambles i got from a scrambler
+        "B U F' L U R' L' F2 D' F2 L F' R' D L' D U2 R' U2 F' D' R2 F2 B' U2",
+        "L U B2 F2 D' B' R U2 F B L' R2 U2 B' F2 R' U B' D' L U' F D F2 B",
+        "B' L U2 R2 L' D L U F2 D' L2 D' L' R' B D' F2 B' U B' U L' U2 L F",
+    ] {
+        kociemba_stuff(input, &kociemba_cache);
+    }
+}
+
+#[allow(unused)]
 fn thistle_suite() {
     let start = Instant::now();
     let thistle_cache = thistlethwaite::ThistlethwaiteCaches::initialize();
@@ -177,9 +265,63 @@ fn thistle_suite() {
     }
 }
 
+fn big_suite() {
+    let start = Instant::now();
+    let thistle_cache = thistlethwaite::ThistlethwaiteCaches::initialize();
+    let kociemba_cache = kociemba::KociembaCaches::initialize();
+
+    // currently about 809.681667ms, arguable if this is "cheating" or not
+    println!("Pre-populating the caches took {:?}", start.elapsed());
+
+    // Some notes -- I want to ensure we flex the maxima for each stage to ensure we're doing
+    // as well as we can. AFAIK the max length for each stage is:
+    //      G0 to G1 -- 7 moves (the superflip hits this)
+    //      G1 to G2 -- 10 moves (I don't have anything close to this; best I have is 8, with the long scrambles)
+    //      G2 to G3 -- 13 moves (I don't have anything close to this; best I have is 10, with R U F R U F)
+    //      G3 to G4 -- 15 moves (I don't have anything close to this; best I have is 12, with R U F R U F)
+    //
+    // Then for Kociemba worst case I'm not sure; worst case from the above is 17 to H1 and 28 to H2
+    // but I think the truth is much, much lower than that. (Well, I know it is, but I don't know
+    // how low).
+
+    for input in [
+        // some hand-made examples i invented to get the basics going
+        // Total time was 43.875µs; Slowest stage was G2 to G3 (2 moves) at 20.958µs
+        "R U F",
+        // Total time was 6.927375ms; Slowest stage was G3 to G4 (12 moves) at 6.242792ms
+        "R U F R U F",
+        // Total time was 5.0325ms; Slowest stage was G3 to G4 (11 moves) at 2.397167ms
+        "R U F R U F R U F",
+        // Total time was 1.057542ms; Slowest stage was G3 to G4 (11 moves) at 870.75µs
+        "R U F R U F R U F2",
+        // the "superflip"
+        // Total time was 992.125µs; Slowest stage was G3 to G4 (11 moves) at 955.708µs
+        "U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2",
+        // three random scrambles i got from a scrambler
+        // Total time was 4.823542ms; Slowest stage was G3 to G4 (11 moves) at 2.645959ms
+        "B U F' L U R' L' F2 D' F2 L F' R' D L' D U2 R' U2 F' D' R2 F2 B' U2",
+        // Total time was 694.125µs; Slowest stage was G2 to G3 (8 moves) at 289.667µs
+        "L U B2 F2 D' B' R U2 F B L' R2 U2 B' F2 R' U B' D' L U' F D F2 B",
+        // Total time was 3.845375ms; Slowest stage was G1 to G2 (8 moves) at 2.321916ms
+        "B' L U2 R2 L' D L U F2 D' L2 D' L' R' B D' F2 B' U B' U L' U2 L F",
+    ] {
+        println!("Operating on scramble: {}", input);
+
+        println!("Thistlethwaite:");
+        thistle_stuff(input, &thistle_cache);
+
+        println!("Kociemba:");
+        kociemba_stuff(input, &kociemba_cache);
+        println!();
+    }
+}
+
 fn main() {
     // this is just debug stuff, uncomment to allow
     // wc_stuff();
 
-    thistle_suite();
+    // thistle_suite();
+    // kociemba_suite();
+
+    big_suite()
 }

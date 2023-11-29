@@ -1,7 +1,7 @@
-use crate::corner_orientation_state::CornersState;
+use crate::corner_orientation_state::CornerOrientationState;
 use crate::cube::Cube;
 use crate::dfs_util;
-use crate::edge_slice_state::EdgesState;
+use crate::edge_slice_state::EdgeMidSliceState;
 use crate::heuristic_caches::HeuristicCache;
 use crate::moves::{CanMove, Dir, FullMove};
 
@@ -11,8 +11,8 @@ const HALF_DIRS: [Dir; 2] = [Dir::U, Dir::D];
 /// Invariants from a cube in G0 to describe what's left to get to G2
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
 pub struct G1State {
-    pub edges: EdgesState,
-    pub corners: CornersState,
+    pub edges: EdgeMidSliceState,
+    pub corners: CornerOrientationState,
 }
 
 impl G1State {
@@ -22,8 +22,8 @@ impl G1State {
 
     pub fn from_cube(cube: &Cube) -> G1State {
         G1State {
-            edges: EdgesState::from_cube(cube),
-            corners: CornersState::from_cube(cube),
+            edges: EdgeMidSliceState::from_cube(cube),
+            corners: CornerOrientationState::from_cube(cube),
         }
     }
 }
@@ -81,16 +81,20 @@ impl CanMove for G1State {
 }
 
 pub struct G1toG2Cache {
-    edge_heuristic: HeuristicCache<EdgesState>,
-    corner_heuristic: HeuristicCache<CornersState>,
+    edge_heuristic: HeuristicCache<EdgeMidSliceState>,
+    corner_heuristic: HeuristicCache<CornerOrientationState>,
 }
 
 impl G1toG2Cache {
     pub fn initialize() -> Self {
         Self {
-            edge_heuristic: HeuristicCache::from_goal(EdgesState::solved(), &FREE_DIRS, &HALF_DIRS),
+            edge_heuristic: HeuristicCache::from_goal(
+                EdgeMidSliceState::solved(),
+                &FREE_DIRS,
+                &HALF_DIRS,
+            ),
             corner_heuristic: HeuristicCache::from_goal(
-                CornersState::solved(),
+                CornerOrientationState::solved(),
                 &FREE_DIRS,
                 &HALF_DIRS,
             ),
