@@ -284,25 +284,35 @@ fn big_suite() {
     // but I think the truth is much, much lower than that. (Well, I know it is, but I don't know
     // how low).
 
+    // Benchmarks to follow; first entry is Thistlethwaite, second is Kociemba (two-phase)
+
     for input in [
         // some hand-made examples i invented to get the basics going
         // Total time was 43.875µs; Slowest stage was G2 to G3 (2 moves) at 20.958µs
+        // Total time was 19.75µs; Slowest stage was H1 to H2 (2 moves) at 12.417µs
         "R U F",
         // Total time was 6.927375ms; Slowest stage was G3 to G4 (12 moves) at 6.242792ms
+        // Total time was 56.375µs; Slowest stage was H0 to H1 (5 moves) at 42.25µs
         "R U F R U F",
         // Total time was 5.0325ms; Slowest stage was G3 to G4 (11 moves) at 2.397167ms
+        // Total time was 232.598709ms; Slowest stage was H1 to H2 (15 moves) at 229.209208ms
         "R U F R U F R U F",
         // Total time was 1.057542ms; Slowest stage was G3 to G4 (11 moves) at 870.75µs
+        // Total time was 13.361125ms; Slowest stage was H0 to H1 (8 moves) at 13.331667ms
         "R U F R U F R U F2",
         // the "superflip"
         // Total time was 992.125µs; Slowest stage was G3 to G4 (11 moves) at 955.708µs
+        // Total time was 380.529667ms; Slowest stage was H0 to H1 (10 moves) at 355.675833ms
         "U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2",
         // three random scrambles i got from a scrambler
         // Total time was 4.823542ms; Slowest stage was G3 to G4 (11 moves) at 2.645959ms
+        // Total time was 380.529667ms; Slowest stage was H0 to H1 (10 moves) at 355.675833ms
         "B U F' L U R' L' F2 D' F2 L F' R' D L' D U2 R' U2 F' D' R2 F2 B' U2",
         // Total time was 694.125µs; Slowest stage was G2 to G3 (8 moves) at 289.667µs
+        // Total time was 5.984541ms; Slowest stage was H1 to H2 (12 moves) at 5.860375ms
         "L U B2 F2 D' B' R U2 F B L' R2 U2 B' F2 R' U B' D' L U' F D F2 B",
         // Total time was 3.845375ms; Slowest stage was G1 to G2 (8 moves) at 2.321916ms
+        // Total time was 123.506167ms; Slowest stage was H1 to H2 (15 moves) at 71.131292ms
         "B' L U2 R2 L' D L U F2 D' L2 D' L' R' B D' F2 B' U B' U L' U2 L F",
     ] {
         println!("Operating on scramble: {}", input);
