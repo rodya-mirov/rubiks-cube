@@ -2,11 +2,9 @@ use crate::cube::Cube;
 use crate::dfs_util;
 use crate::edge_orientation_state::EdgeOrientationState;
 use crate::heuristic_caches::HeuristicCache;
-use crate::moves::{Dir, FullMove};
+use crate::moves::{FullMove, ALL_DIRS};
 
 /// Invariants from a cube in G0 to describe what's left to get to G1
-
-const ALL_DIRS: [Dir; 6] = [Dir::U, Dir::D, Dir::B, Dir::F, Dir::L, Dir::R];
 
 pub struct G0toG1Cache {
     heuristic_cache: HeuristicCache<EdgeOrientationState>,

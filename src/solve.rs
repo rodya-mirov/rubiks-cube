@@ -1,13 +1,10 @@
 //! Module for solving cubes in various ways and to various degrees
 
 use crate::cube::{AmbigFacelet, Cube};
-use crate::moves::{Amt, ApplyMove, Dir, FullMove};
+use crate::moves::{ApplyMove, FullMove, ALL_AMTS, ALL_DIRS};
 use crate::shadow::to_white_cross;
 
 type MaskedCube = Cube<AmbigFacelet>;
-
-const ALL_DIRS: [Dir; 6] = [Dir::U, Dir::D, Dir::B, Dir::F, Dir::L, Dir::R];
-const ALL_AMTS: [Amt; 3] = [Amt::One, Amt::Two, Amt::Rev];
 
 pub fn solve_wc(cube: Cube) -> Vec<FullMove> {
     let mask = to_white_cross(cube.clone());

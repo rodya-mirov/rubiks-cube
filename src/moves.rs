@@ -1,5 +1,6 @@
-use crate::cube::{Cube, FBFace, LRFace, UDFace};
 use std::fmt::{Display, Formatter};
+
+use crate::cube::{Cube, FBFace, LRFace, UDFace};
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
 pub enum Dir {
@@ -23,6 +24,9 @@ pub struct FullMove {
     pub dir: Dir,
     pub amt: Amt,
 }
+
+pub const ALL_DIRS: [Dir; 6] = [Dir::U, Dir::D, Dir::B, Dir::F, Dir::L, Dir::R];
+pub const ALL_AMTS: [Amt; 3] = [Amt::One, Amt::Two, Amt::Rev];
 
 /// Parses an input as a whitespace-separated list of moves. Panics on bad input because this is
 /// not a production application.
@@ -470,8 +474,9 @@ impl<F> CanMove for Cube<F> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::cube::Facelet;
+
+    use super::*;
 
     fn solved() -> Cube {
         return Cube::make_solved(Facelet::White, Facelet::Blue);

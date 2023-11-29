@@ -76,18 +76,20 @@
 //!
 //!         TODO: ugh I still don't understand G3 well enough to explain it
 
-mod g0g1;
-mod g1g2;
-mod g2g4;
-
 pub use g0g1::{solve_to_g1, G0toG1Cache};
 pub use g1g2::{solve_to_g2, G1toG2Cache};
-pub use g2g4::{enumerate_g3_pos, solve_to_g3, solve_to_g4, G3toG4Cache, PosCache};
+pub use g2g3::{solve_to_g3, G2toG3Cache};
+pub use g3g4::{solve_to_g4, G3toG4Cache};
+
+mod g0g1;
+mod g1g2;
+mod g2g3;
+mod g3g4;
 
 pub struct ThistlethwaiteCaches {
     pub g0g1cache: G0toG1Cache,
     pub g1g2cache: G1toG2Cache,
-    pub g2g3cache: PosCache,
+    pub g2g3cache: G2toG3Cache,
     pub g3g4cache: G3toG4Cache,
 }
 
@@ -96,7 +98,7 @@ impl ThistlethwaiteCaches {
         Self {
             g0g1cache: G0toG1Cache::initialize(),
             g1g2cache: G1toG2Cache::initialize(),
-            g2g3cache: enumerate_g3_pos(),
+            g2g3cache: G2toG3Cache::initialize(),
             g3g4cache: G3toG4Cache::initialize(),
         }
     }

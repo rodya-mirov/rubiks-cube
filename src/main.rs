@@ -1,21 +1,27 @@
+use std::time::Instant;
+
+use itertools::concat;
+
 use crate::cube::Facelet;
 use crate::moves::{parse_many, to_nice_str, ApplyMove, FullMove};
 use crate::shadow::to_white_cross;
 use crate::timed::timed;
-use itertools::concat;
-use std::time::Instant;
 
 mod corner_orientation_state;
+mod corner_position_state;
 mod cube;
 mod dfs_util;
 mod edge_orientation_state;
+mod edge_position_state;
 mod edge_slice_state;
 mod heuristic_caches;
+mod kociemba;
 mod moves;
 mod shadow;
 mod solve;
 mod thistlethwaite;
 mod timed;
+mod total_position_state;
 
 fn thistle_stuff(input: &str, thistle_cache: &thistlethwaite::ThistlethwaiteCaches) {
     let start = Instant::now();
