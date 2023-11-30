@@ -3,7 +3,7 @@ use crate::cube::Cube;
 use crate::dfs_util;
 use crate::edge_orientation_state::EdgeOrientationState;
 use crate::edge_slice_state::EdgeMidSliceState;
-use crate::heuristic_caches::{Heuristic, HeuristicCache};
+use crate::heuristic_caches::{CappedHeuristicCache, Heuristic, HeuristicCache};
 use crate::moves::{CanMove, FullMove, ALL_DIRS};
 
 pub fn solve_to_h1(cube: &Cube, cache: &H0toH1Cache) -> Vec<FullMove> {
@@ -22,10 +22,18 @@ pub fn solve_to_h1(cube: &Cube, cache: &H0toH1Cache) -> Vec<FullMove> {
     )
 }
 
+type TotalState = (
+    EdgeOrientationState,
+    (CornerOrientationState, EdgeMidSliceState),
+);
+
+const TOTAL_STATE_MAX_FUEL: usize = 6;
+
 pub struct H0toH1Cache {
     edge_orientation: HeuristicCache<EdgeOrientationState>,
     corner_orientation: HeuristicCache<CornerOrientationState>,
     edge_slice_state: HeuristicCache<EdgeMidSliceState>,
+    total_state: CappedHeuristicCache<TotalState>,
 }
 
 impl H0toH1Cache {
@@ -46,6 +54,18 @@ impl H0toH1Cache {
                 &ALL_DIRS,
                 &[],
             ),
+            total_state: CappedHeuristicCache::from_goal(
+                (
+                    EdgeOrientationState::make_solved(),
+                    (
+                        CornerOrientationState::solved(),
+                        EdgeMidSliceState::solved(),
+                    ),
+                ),
+                &ALL_DIRS,
+                &[],
+                TOTAL_STATE_MAX_FUEL,
+            ),
         }
     }
 }
@@ -56,7 +76,13 @@ impl Heuristic<RunningState> for H0toH1Cache {
         let edges = self.edge_orientation.evaluate(&s.edge_or);
         let corners = self.corner_orientation.evaluate(&s.corner_or);
 
-        slice.max(edges).max(corners)
+        // TODO: can probably improve this so we don't need to do the clones?
+        let total_state = self.total_state.evaluate(&(
+            s.edge_or.clone(),
+            (s.corner_or.clone(), s.mid_slice.clone()),
+        ));
+
+        slice.max(edges).max(corners).max(total_state)
     }
 }
 

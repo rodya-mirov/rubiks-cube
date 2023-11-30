@@ -2,7 +2,7 @@ use crate::corner_position_state::CubeCornerPositions;
 use crate::cube::Cube;
 use crate::dfs_util;
 use crate::edge_position_state::CubeEdgePositions;
-use crate::heuristic_caches::{Heuristic, HeuristicCache};
+use crate::heuristic_caches::{CappedHeuristicCache, Heuristic, HeuristicCache};
 use crate::moves::{CanMove, Dir, FullMove};
 
 const FREE_DIRS: [Dir; 2] = [Dir::L, Dir::R];
@@ -27,7 +27,12 @@ pub fn solve_to_h2(cube: &Cube, cache: &H1toH2Cache) -> Vec<FullMove> {
 pub struct H1toH2Cache {
     edge_pos: HeuristicCache<CubeEdgePositions>,
     corner_pos: HeuristicCache<CubeCornerPositions>,
+    total_pos: CappedHeuristicCache<TotalState>,
 }
+
+type TotalState = (CubeEdgePositions, CubeCornerPositions);
+
+const TOTAL_STATE_FUEL: usize = 7;
 
 impl H1toH2Cache {
     pub fn initialize() -> Self {
@@ -42,6 +47,15 @@ impl H1toH2Cache {
                 &FREE_DIRS,
                 &HALF_DIRS,
             ),
+            total_pos: CappedHeuristicCache::from_goal(
+                (
+                    CubeEdgePositions::make_solved(),
+                    CubeCornerPositions::make_solved(),
+                ),
+                &FREE_DIRS,
+                &HALF_DIRS,
+                TOTAL_STATE_FUEL,
+            ),
         }
     }
 }
@@ -50,8 +64,11 @@ impl Heuristic<RunningState> for H1toH2Cache {
     fn evaluate(&self, s: &RunningState) -> usize {
         let edges = self.edge_pos.evaluate(&s.edge_pos);
         let corners = self.corner_pos.evaluate(&s.corner_pos);
+        let total = self
+            .total_pos
+            .evaluate(&(s.edge_pos.clone(), s.corner_pos.clone()));
 
-        edges.max(corners)
+        edges.max(corners).max(total)
     }
 }
 
