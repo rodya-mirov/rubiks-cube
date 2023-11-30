@@ -1,3 +1,4 @@
+use crate::heuristic_caches::Heuristic;
 use crate::moves::{Amt, ApplyMove, CanMove, Dir, FullMove};
 
 const ALL_AMTS: [Amt; 3] = [Amt::One, Amt::Two, Amt::Rev];
@@ -27,20 +28,20 @@ fn can_follow(last: Option<Dir>, next: Dir) -> bool {
 pub fn solve<
     StateType: CanMove + Clone,
     IsSolved: Fn(&StateType) -> bool,
-    CostHeuristic: FnMut(&StateType) -> usize,
+    CostHeuristic: Heuristic<StateType>,
 >(
     start_state: StateType,
     free_dirs: &[Dir],
     half_move_dirs: &[Dir],
     is_solved: IsSolved,
-    cost_heuristic: CostHeuristic,
+    cost_heuristic: &CostHeuristic,
     max_fuel: usize,
 ) -> Vec<FullMove> {
     struct IdaState<'a, IsSolved, CostHeuristic> {
         free_dirs: &'a [Dir],
         half_move_dirs: &'a [Dir],
         is_solved: IsSolved,
-        cost_heuristic: CostHeuristic,
+        cost_heuristic: &'a CostHeuristic,
     }
 
     // TODO perf: strictly speaking we are able to increment the max_depth a little faster
@@ -51,7 +52,7 @@ pub fn solve<
         'a,
         StateType: CanMove + Clone,
         IsSolved: Fn(&StateType) -> bool,
-        CostHeuristic: FnMut(&StateType) -> usize,
+        CostHeuristic: Heuristic<StateType>,
     >(
         ida_state: &mut IdaState<'a, IsSolved, CostHeuristic>,
         cube: &StateType,
@@ -60,7 +61,7 @@ pub fn solve<
     ) -> bool {
         if (ida_state.is_solved)(cube) {
             return true;
-        } else if running.len() + (ida_state.cost_heuristic)(cube) >= max_depth {
+        } else if running.len() + (ida_state.cost_heuristic).evaluate(cube) >= max_depth {
             return false;
         }
 

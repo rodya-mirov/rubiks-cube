@@ -33,7 +33,7 @@ pub fn solve_to_g1(cube: &Cube, cache: &G0toG1Cache) -> Vec<FullMove> {
         &ALL_DIRS,
         &[],
         |s| s.is_solved(),
-        |s| cache.heuristic_cache.evaluate(s),
+        &cache.heuristic_cache,
         MAX_MOVES,
     )
 }

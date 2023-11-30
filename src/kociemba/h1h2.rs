@@ -2,7 +2,7 @@ use crate::corner_position_state::CubeCornerPositions;
 use crate::cube::Cube;
 use crate::dfs_util;
 use crate::edge_position_state::CubeEdgePositions;
-use crate::heuristic_caches::HeuristicCache;
+use crate::heuristic_caches::{Heuristic, HeuristicCache};
 use crate::moves::{CanMove, Dir, FullMove};
 
 const FREE_DIRS: [Dir; 2] = [Dir::L, Dir::R];
@@ -19,7 +19,7 @@ pub fn solve_to_h2(cube: &Cube, cache: &H1toH2Cache) -> Vec<FullMove> {
         &FREE_DIRS,
         &HALF_DIRS,
         |s| s.is_solved(),
-        |s| cache.evaluate(s),
+        cache,
         MAX_MOVES,
     )
 }
@@ -44,7 +44,9 @@ impl H1toH2Cache {
             ),
         }
     }
+}
 
+impl Heuristic<RunningState> for H1toH2Cache {
     fn evaluate(&self, s: &RunningState) -> usize {
         let edges = self.edge_pos.evaluate(&s.edge_pos);
         let corners = self.corner_pos.evaluate(&s.corner_pos);

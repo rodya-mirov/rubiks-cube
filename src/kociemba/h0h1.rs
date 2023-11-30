@@ -3,7 +3,7 @@ use crate::cube::Cube;
 use crate::dfs_util;
 use crate::edge_orientation_state::EdgeOrientationState;
 use crate::edge_slice_state::EdgeMidSliceState;
-use crate::heuristic_caches::HeuristicCache;
+use crate::heuristic_caches::{Heuristic, HeuristicCache};
 use crate::moves::{CanMove, FullMove, ALL_DIRS};
 
 pub fn solve_to_h1(cube: &Cube, cache: &H0toH1Cache) -> Vec<FullMove> {
@@ -17,7 +17,7 @@ pub fn solve_to_h1(cube: &Cube, cache: &H0toH1Cache) -> Vec<FullMove> {
         &ALL_DIRS,
         &[],
         |s| s.is_solved(),
-        |s| cache.evaluate(s),
+        cache,
         MAX_MOVES,
     )
 }
@@ -48,7 +48,9 @@ impl H0toH1Cache {
             ),
         }
     }
+}
 
+impl Heuristic<RunningState> for H0toH1Cache {
     fn evaluate(&self, s: &RunningState) -> usize {
         let slice = self.edge_slice_state.evaluate(&s.mid_slice);
         let edges = self.edge_orientation.evaluate(&s.edge_or);

@@ -62,8 +62,14 @@ where
 
         Self { known_costs }
     }
+}
 
-    pub fn evaluate(&self, state: &StateType) -> usize {
+pub trait Heuristic<StateType> {
+    fn evaluate(&self, state: &StateType) -> usize;
+}
+
+impl<StateType: Hash + Eq + PartialEq> Heuristic<StateType> for HeuristicCache<StateType> {
+    fn evaluate(&self, state: &StateType) -> usize {
         if let Some(&cost) = self.known_costs.get(&state) {
             return cost;
         }

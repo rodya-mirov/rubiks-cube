@@ -164,6 +164,40 @@ where
     }
 }
 
+impl<A: CanMove, B: CanMove> CanMove for (A, B) {
+    fn r(self) -> Self {
+        (self.0.r(), self.1.r())
+    }
+
+    fn l(self) -> Self {
+        (self.0.l(), self.1.l())
+    }
+
+    fn u(self) -> Self {
+        (self.0.u(), self.1.u())
+    }
+
+    fn u_two(self) -> Self {
+        (self.0.u_two(), self.1.u_two())
+    }
+
+    fn d(self) -> Self {
+        (self.0.d(), self.1.d())
+    }
+
+    fn d_two(self) -> Self {
+        (self.0.d_two(), self.1.d_two())
+    }
+
+    fn b(self) -> Self {
+        (self.0.b(), self.1.b())
+    }
+
+    fn f(self) -> Self {
+        (self.0.f(), self.1.f())
+    }
+}
+
 pub trait CanMove: Sized {
     fn r(self) -> Self;
 

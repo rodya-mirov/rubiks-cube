@@ -16,7 +16,7 @@ use crate::corner_position_state::CubeCornerPositions;
 use crate::cube::Cube;
 use crate::dfs_util;
 use crate::edge_position_state::CubeEdgePositions;
-use crate::heuristic_caches::HeuristicCache;
+use crate::heuristic_caches::{Heuristic, HeuristicCache};
 use crate::moves::{FullMove, ALL_DIRS};
 use crate::total_position_state::CubePositions;
 
@@ -42,6 +42,14 @@ impl G3toG4Cache {
     }
 }
 
+impl Heuristic<CubePositions> for G3toG4Cache {
+    fn evaluate(&self, state: &CubePositions) -> usize {
+        let e = self.edge_heuristic.evaluate(&state.edges);
+        let c = self.corner_heuristic.evaluate(&state.corners);
+        e.max(c)
+    }
+}
+
 pub fn solve_to_g4(cube: &Cube, cache: &G3toG4Cache) -> Vec<FullMove> {
     const MAX_MOVES: usize = 15;
 
@@ -50,12 +58,7 @@ pub fn solve_to_g4(cube: &Cube, cache: &G3toG4Cache) -> Vec<FullMove> {
         &[],
         &ALL_DIRS,
         |s| s.is_solved(),
-        |s| {
-            cache
-                .corner_heuristic
-                .evaluate(&s.corners)
-                .max(cache.edge_heuristic.evaluate(&s.edges))
-        },
+        cache,
         MAX_MOVES,
     )
 }

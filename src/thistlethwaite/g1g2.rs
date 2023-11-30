@@ -2,7 +2,7 @@ use crate::corner_orientation_state::CornerOrientationState;
 use crate::cube::Cube;
 use crate::dfs_util;
 use crate::edge_slice_state::EdgeMidSliceState;
-use crate::heuristic_caches::HeuristicCache;
+use crate::heuristic_caches::{Heuristic, HeuristicCache};
 use crate::moves::{CanMove, Dir, FullMove};
 
 const FREE_DIRS: [Dir; 4] = [Dir::B, Dir::F, Dir::L, Dir::R];
@@ -102,6 +102,14 @@ impl G1toG2Cache {
     }
 }
 
+impl Heuristic<G1State> for &G1toG2Cache {
+    fn evaluate(&self, state: &G1State) -> usize {
+        let e = self.edge_heuristic.evaluate(&state.edges);
+        let c = self.corner_heuristic.evaluate(&state.corners);
+        e.max(c)
+    }
+}
+
 /// Solve to G2. Assumes the input is already in G1, results not guaranteed if not.
 pub fn solve_to_g2(cube: &Cube, cache: &G1toG2Cache) -> Vec<FullMove> {
     const MAX_MOVES: usize = 10;
@@ -112,12 +120,7 @@ pub fn solve_to_g2(cube: &Cube, cache: &G1toG2Cache) -> Vec<FullMove> {
         &FREE_DIRS,
         &HALF_DIRS,
         |s| s.is_solved(),
-        |s| {
-            cache
-                .edge_heuristic
-                .evaluate(&s.edges)
-                .max(cache.corner_heuristic.evaluate(&s.corners))
-        },
+        &cache,
         MAX_MOVES,
     )
 }
