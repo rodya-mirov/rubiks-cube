@@ -1,3 +1,5 @@
+use ahash::HashSet;
+
 use crate::cube::{Cube, Facelet};
 use crate::moves::CanMove;
 
@@ -17,6 +19,25 @@ pub enum SideCubelet {
     DR,
     DB,
     DL,
+}
+
+impl SideCubelet {
+    fn to_index(&self) -> u8 {
+        match self {
+            SideCubelet::UF => 0,
+            SideCubelet::UR => 1,
+            SideCubelet::UB => 2,
+            SideCubelet::UL => 3,
+            SideCubelet::FL => 4,
+            SideCubelet::FR => 5,
+            SideCubelet::BL => 6,
+            SideCubelet::BR => 7,
+            SideCubelet::DF => 8,
+            SideCubelet::DR => 9,
+            SideCubelet::DB => 10,
+            SideCubelet::DL => 11,
+        }
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
@@ -51,6 +72,57 @@ impl CubeEdgePositions {
             db: SideCubelet::DB,
             dl: SideCubelet::DL,
         }
+    }
+
+    fn ind(&self, index: u8) -> SideCubelet {
+        match index {
+            0 => self.uf.clone(),
+            1 => self.ur.clone(),
+            2 => self.ub.clone(),
+            3 => self.ul.clone(),
+            4 => self.fl.clone(),
+            5 => self.fr.clone(),
+            6 => self.bl.clone(),
+            7 => self.br.clone(),
+            8 => self.df.clone(),
+            9 => self.dr.clone(),
+            10 => self.db.clone(),
+            11 => self.dl.clone(),
+            _ => panic!("Out of range index {index}"),
+        }
+    }
+
+    /// Indicates if the edge position state is directly solvable. Essentially this has
+    /// even parity (yes) or odd parity (no).
+    ///
+    /// Note: the behavior of this function is unspecified if the position state is not a
+    /// permutation (i.e. it has repeats). It may panic or give any answer, and is subject
+    /// to change.
+    pub fn directly_solvable(&self) -> bool {
+        let mut seen: HashSet<u8> = HashSet::default();
+
+        let mut total_is_even = true;
+
+        for i in 0..12 {
+            if seen.contains(&i) {
+                continue;
+            }
+
+            let mut cycle_length = 0;
+            let mut next = i;
+
+            while !seen.contains(&next) {
+                seen.insert(next);
+                next = self.ind(next).to_index();
+                cycle_length += 1;
+            }
+
+            if cycle_length % 2 != 1 {
+                total_is_even = !total_is_even;
+            }
+        }
+
+        total_is_even
     }
 
     pub fn from_cube(cube: &Cube) -> Self {
@@ -179,5 +251,60 @@ impl CanMove for CubeEdgePositions {
             fr: self.uf,
             ..self
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn solved_test() {
+        let input = CubeEdgePositions::make_solved();
+
+        assert!(input.directly_solvable());
+    }
+
+    #[test]
+    fn one_swap_test() {
+        let mut input = CubeEdgePositions::make_solved();
+        input.uf = SideCubelet::BR;
+        input.br = SideCubelet::UF;
+
+        assert!(!input.directly_solvable());
+    }
+
+    #[test]
+    fn one_triple_test() {
+        let mut input = CubeEdgePositions::make_solved();
+        input.uf = SideCubelet::BR;
+        input.br = SideCubelet::DL;
+        input.dl = SideCubelet::UF;
+
+        assert!(input.directly_solvable());
+    }
+
+    #[test]
+    fn two_swap_test() {
+        let mut input = CubeEdgePositions::make_solved();
+
+        input.uf = SideCubelet::BR;
+        input.br = SideCubelet::UF;
+
+        input.ul = SideCubelet::FL;
+        input.fl = SideCubelet::UL;
+
+        assert!(input.directly_solvable());
+    }
+
+    #[test]
+    fn four_cycle_test() {
+        let mut input = CubeEdgePositions::make_solved();
+        input.fr = SideCubelet::DR;
+        input.dr = SideCubelet::DL;
+        input.dl = SideCubelet::BL;
+        input.bl = SideCubelet::FR;
+
+        assert!(!input.directly_solvable());
     }
 }

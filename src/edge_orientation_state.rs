@@ -92,6 +92,24 @@ impl EdgeOrientationState {
         }
     }
 
+    pub fn is_solvable(&self) -> bool {
+        // solvable if an even number of pieces are out of orientation
+        let is_flipped = self.uf
+            ^ self.ub
+            ^ self.ul
+            ^ self.ur
+            ^ self.fl
+            ^ self.fr
+            ^ self.bl
+            ^ self.br
+            ^ self.df
+            ^ self.db
+            ^ self.dl
+            ^ self.dr;
+
+        !is_flipped
+    }
+
     pub fn is_solved(&self) -> bool {
         self.uf
             && self.ub
@@ -169,5 +187,47 @@ impl CanMove for EdgeOrientationState {
             fr: self.uf,
             ..self
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn solved_test() {
+        let input = EdgeOrientationState::make_solved();
+
+        assert!(input.is_solvable());
+    }
+
+    #[test]
+    fn one_flip_test() {
+        let mut input = EdgeOrientationState::make_solved();
+
+        input.uf = false;
+
+        assert!(!input.is_solvable());
+    }
+
+    #[test]
+    fn two_flip_test() {
+        let mut input = EdgeOrientationState::make_solved();
+
+        input.uf = false;
+        input.db = false;
+
+        assert!(input.is_solvable());
+    }
+
+    #[test]
+    fn three_flip_test() {
+        let mut input = EdgeOrientationState::make_solved();
+
+        input.uf = false;
+        input.ul = false;
+        input.fl = false;
+
+        assert!(!input.is_solvable());
     }
 }

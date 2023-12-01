@@ -3,6 +3,8 @@
 
 use crate::cube::{Cube, Facelet};
 use crate::moves::CanMove;
+use std::iter::Sum;
+use std::ops::Add;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
 enum CornerOrientation {
@@ -11,6 +13,32 @@ enum CornerOrientation {
     CW,
     // means it has been rotated once CCW
     CCW,
+}
+
+impl Add for CornerOrientation {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        match self {
+            CornerOrientation::Good => rhs,
+            CornerOrientation::CW => match rhs {
+                CornerOrientation::Good => CornerOrientation::CW,
+                CornerOrientation::CW => CornerOrientation::CCW,
+                CornerOrientation::CCW => CornerOrientation::Good,
+            },
+            CornerOrientation::CCW => match rhs {
+                CornerOrientation::Good => CornerOrientation::CCW,
+                CornerOrientation::CW => CornerOrientation::Good,
+                CornerOrientation::CCW => CornerOrientation::CW,
+            },
+        }
+    }
+}
+
+impl Sum<CornerOrientation> for CornerOrientation {
+    fn sum<I: Iterator<Item = CornerOrientation>>(iter: I) -> Self {
+        iter.fold(CornerOrientation::Good, |a, b| a + b)
+    }
 }
 
 impl CornerOrientation {
@@ -59,6 +87,19 @@ impl CornerOrientationState {
             bdl: CornerOrientation::Good,
             bdr: CornerOrientation::Good,
         }
+    }
+
+    fn total_orientation(&self) -> CornerOrientation {
+        [
+            self.ful, self.fur, self.fdl, self.fdr, self.bul, self.bur, self.bdl, self.bdr,
+        ]
+        .iter()
+        .copied()
+        .sum()
+    }
+
+    pub fn is_solvable(&self) -> bool {
+        self.total_orientation() == CornerOrientation::Good
     }
 
     pub fn is_solved(&self) -> bool {
@@ -171,5 +212,83 @@ impl CanMove for CornerOrientationState {
             fur: self.ful.ccw(),
             ..self
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn solved_test() {
+        let input = CornerOrientationState::solved();
+
+        assert!(input.is_solvable());
+    }
+
+    #[test]
+    fn one_rot_test() {
+        let mut input = CornerOrientationState::solved();
+
+        input.fdr = CornerOrientation::CCW;
+
+        assert!(!input.is_solvable());
+
+        input.fdr = CornerOrientation::CW;
+
+        assert!(!input.is_solvable());
+
+        input.fdr = CornerOrientation::Good;
+
+        assert!(input.is_solvable());
+    }
+
+    #[test]
+    fn two_rot_test() {
+        let mut input = CornerOrientationState::solved();
+
+        input.fdr = CornerOrientation::CCW;
+        input.bdl = CornerOrientation::CCW;
+
+        // CCW + CCW = CW, not solvable
+        assert!(!input.is_solvable());
+
+        input.fdr = CornerOrientation::CW;
+        input.bdl = CornerOrientation::CCW;
+
+        // CCW + CW = Good, solvable
+        assert!(input.is_solvable());
+
+        input.fdr = CornerOrientation::CW;
+        input.bdl = CornerOrientation::CW;
+
+        // CW + CW = CCW, not solvable
+        assert!(!input.is_solvable());
+    }
+
+    #[test]
+    fn three_rot_test() {
+        let mut input = CornerOrientationState::solved();
+
+        input.fdr = CornerOrientation::CCW;
+        input.bdl = CornerOrientation::CCW;
+        input.bdr = CornerOrientation::CCW;
+
+        // CCW + CCW + CCW = Good, solvable
+        assert!(input.is_solvable());
+
+        input.fdr = CornerOrientation::CW;
+        input.bdl = CornerOrientation::CCW;
+        input.bdr = CornerOrientation::CCW;
+
+        // CCW + CCW + CW = CCW, not solvable
+        assert!(!input.is_solvable());
+
+        input.fdr = CornerOrientation::CW;
+        input.bdl = CornerOrientation::CW;
+        input.bdr = CornerOrientation::CW;
+
+        // CW + CW + CW = Good, solvable
+        assert!(input.is_solvable());
     }
 }

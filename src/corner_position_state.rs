@@ -1,3 +1,4 @@
+use ahash::HashSet;
 use itertools::Itertools;
 
 use crate::cube::{Cube, Facelet};
@@ -17,16 +18,31 @@ pub enum CornerCubelet {
     BDR,
 }
 
+impl CornerCubelet {
+    fn to_index(&self) -> u8 {
+        match self {
+            CornerCubelet::FUL => 0,
+            CornerCubelet::FUR => 1,
+            CornerCubelet::BUL => 2,
+            CornerCubelet::BUR => 3,
+            CornerCubelet::FDL => 4,
+            CornerCubelet::FDR => 5,
+            CornerCubelet::BDL => 6,
+            CornerCubelet::BDR => 7,
+        }
+    }
+}
+
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub struct CubeCornerPositions {
-    pub fur: CornerCubelet,
     pub ful: CornerCubelet,
-    pub bur: CornerCubelet,
+    pub fur: CornerCubelet,
     pub bul: CornerCubelet,
-    pub fdr: CornerCubelet,
+    pub bur: CornerCubelet,
     pub fdl: CornerCubelet,
-    pub bdr: CornerCubelet,
+    pub fdr: CornerCubelet,
     pub bdl: CornerCubelet,
+    pub bdr: CornerCubelet,
 }
 
 impl CubeCornerPositions {
@@ -43,10 +59,54 @@ impl CubeCornerPositions {
         }
     }
 
-    pub fn from_cube(cube: &Cube) -> Self {
-        // sooooo much typing with this one
-        // nothing interesting here
+    fn ind(&self, index: u8) -> CornerCubelet {
+        match index {
+            0 => self.ful.clone(),
+            1 => self.fur.clone(),
+            2 => self.bul.clone(),
+            3 => self.bur.clone(),
+            4 => self.fdl.clone(),
+            5 => self.fdr.clone(),
+            6 => self.bdl.clone(),
+            7 => self.bdr.clone(),
+            _ => panic!("Out of range index {index}"),
+        }
+    }
 
+    /// Indicates if the corner position state is directly solvable. Essentially this has
+    /// even parity (yes) or odd parity (no).
+    ///
+    /// Note: the behavior of this function is unspecified if the position state is not a
+    /// permutation (i.e. it has repeats). It may panic or give any answer, and is subject
+    /// to change.
+    pub fn directly_solvable(&self) -> bool {
+        let mut seen: HashSet<u8> = HashSet::default();
+
+        let mut total_is_even = true;
+
+        for i in 0..8 {
+            if seen.contains(&i) {
+                continue;
+            }
+
+            let mut cycle_length = 0;
+            let mut next = i;
+
+            while !seen.contains(&next) {
+                seen.insert(next);
+                next = self.ind(next).to_index();
+                cycle_length += 1;
+            }
+
+            if cycle_length % 2 != 1 {
+                total_is_even = !total_is_even;
+            }
+        }
+
+        total_is_even
+    }
+
+    pub fn from_cube(cube: &Cube) -> Self {
         let l = &cube.l.cc;
         let r = &cube.r.cc;
         let u = &cube.u.cc;
@@ -166,5 +226,60 @@ impl CanMove for CubeCornerPositions {
             fdr: self.fur,
             ..self
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn solved_test() {
+        let input = CubeCornerPositions::make_solved();
+
+        assert!(input.directly_solvable());
+    }
+
+    #[test]
+    fn one_swap_test() {
+        let mut input = CubeCornerPositions::make_solved();
+        input.fdr = CornerCubelet::BDL;
+        input.bdl = CornerCubelet::FDR;
+
+        assert!(!input.directly_solvable());
+    }
+
+    #[test]
+    fn one_triple_test() {
+        let mut input = CubeCornerPositions::make_solved();
+        input.fdr = CornerCubelet::BDR;
+        input.bdr = CornerCubelet::BDL;
+        input.bdl = CornerCubelet::FDR;
+
+        assert!(input.directly_solvable());
+    }
+
+    #[test]
+    fn two_swap_test() {
+        let mut input = CubeCornerPositions::make_solved();
+
+        input.fdr = CornerCubelet::BDR;
+        input.bdr = CornerCubelet::FDR;
+
+        input.bdl = CornerCubelet::BUR;
+        input.bur = CornerCubelet::BDL;
+
+        assert!(input.directly_solvable());
+    }
+
+    #[test]
+    fn four_cycle_test() {
+        let mut input = CubeCornerPositions::make_solved();
+        input.fdr = CornerCubelet::BDR;
+        input.bdr = CornerCubelet::BDL;
+        input.bdl = CornerCubelet::BUR;
+        input.bur = CornerCubelet::FDR;
+
+        assert!(!input.directly_solvable());
     }
 }
