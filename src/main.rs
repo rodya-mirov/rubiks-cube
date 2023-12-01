@@ -1,8 +1,8 @@
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
-use crate::corner_orientation_state::CornerOrientationState;
 use itertools::concat;
 
+use crate::corner_orientation_state::CornerOrientationState;
 use crate::cube::Facelet;
 use crate::edge_orientation_state::EdgeOrientationState;
 use crate::edge_slice_state::EdgeMidSliceState;
@@ -58,7 +58,7 @@ fn kociemba_stuff(input: &str, kociemba_cache: &kociemba::KociembaCaches) {
     let total_solution: Vec<FullMove> = concat([h1_solution.clone(), h2_solution.clone()]);
 
     println!(
-        "Total solution has {}+{} == {} moves: {}",
+        "    Total solution has {}+{} == {} moves: {}",
         h1_solution.len(),
         h2_solution.len(),
         total_solution.len(),
@@ -71,7 +71,7 @@ fn kociemba_stuff(input: &str, kociemba_cache: &kociemba::KociembaCaches) {
     ];
     let max_time = timings.iter().max().copied().unwrap();
     println!(
-        "Total time was {:?}; Slowest stage was {} ({} moves) at {:?}",
+        "    Total time was {:?}; Slowest stage was {} ({} moves) at {:?}",
         start.elapsed(),
         max_time.1,
         max_time.2,
@@ -120,7 +120,7 @@ fn thistle_stuff(input: &str, thistle_cache: &thistlethwaite::ThistlethwaiteCach
     ]);
 
     println!(
-        "Total solution has {}+{}+{}+{} == {} moves: {}",
+        "    Total solution has {}+{}+{}+{} == {} moves: {}",
         g1_solution.len(),
         g2_solution.len(),
         g3_solution.len(),
@@ -136,7 +136,7 @@ fn thistle_stuff(input: &str, thistle_cache: &thistlethwaite::ThistlethwaiteCach
     ];
     let max_time = timings.iter().max().copied().unwrap();
     println!(
-        "Total time was {:?}; Slowest stage was {} ({} moves) at {:?}",
+        "    Total time was {:?}; Slowest stage was {} ({} moves) at {:?}",
         start.elapsed(),
         max_time.1,
         max_time.2,
@@ -285,6 +285,8 @@ fn big_suite() {
         start.elapsed()
     );
 
+    println!();
+
     // Some notes -- I want to ensure we flex the maxima for each stage to ensure we're doing
     // as well as we can. AFAIK the max length for each stage is:
     //      G0 to G1 -- 7 moves (the superflip hits this)
@@ -298,44 +300,63 @@ fn big_suite() {
 
     // Benchmarks to follow; first entry is Thistlethwaite, second is Kociemba (two-phase)
 
+    let mut worst_thistle_time = Duration::new(0, 0);
+    let mut worst_thistle_scramble = "";
+
+    let mut worst_kociemba_time = Duration::new(0, 0);
+    let mut worst_kociemba_scramble = "";
+
     for input in [
         // some hand-made examples i invented to get the basics going
-        // Total time was 43.875µs; Slowest stage was G2 to G3 (2 moves) at 20.958µs
-        // Total time was 42.625µs; Slowest stage was H1 to H2 (2 moves) at 28.208µs
         "R U F",
-        // Total time was 6.927375ms; Slowest stage was G3 to G4 (12 moves) at 6.242792ms
-        // Total time was 35.084µs; Slowest stage was H0 to H1 (5 moves) at 21.833µs
         "R U F R U F",
-        // Total time was 5.0325ms; Slowest stage was G3 to G4 (11 moves) at 2.397167ms
-        // Total time was 113.444625ms; Slowest stage was H1 to H2 (15 moves) at 113.38775ms
         "R U F R U F R U F",
-        // Total time was 1.057542ms; Slowest stage was G3 to G4 (11 moves) at 870.75µs
-        // Total time was 86.709µs; Slowest stage was H0 to H1 (8 moves) at 71.625µs
         "R U F R U F R U F2",
         // the "superflip"
-        // Total time was 992.125µs; Slowest stage was G3 to G4 (11 moves) at 955.708µs
-        // Total time was 10.012333ms; Slowest stage was H1 to H2 (13 moves) at 8.418791ms
         "U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2",
         // three random scrambles i got from a scrambler
-        // Total time was 4.823542ms; Slowest stage was G3 to G4 (11 moves) at 2.645959ms
-        // Total time was 44.424333ms; Slowest stage was H1 to H2 (15 moves) at 42.236541ms
         "B U F' L U R' L' F2 D' F2 L F' R' D L' D U2 R' U2 F' D' R2 F2 B' U2",
-        // Total time was 694.125µs; Slowest stage was G2 to G3 (8 moves) at 289.667µs
-        // Total time was 2.935959ms; Slowest stage was H1 to H2 (12 moves) at 2.896625ms
         "L U B2 F2 D' B' R U2 F B L' R2 U2 B' F2 R' U B' D' L U' F D F2 B",
-        // Total time was 3.845375ms; Slowest stage was G1 to G2 (8 moves) at 2.321916ms
-        // Total time was 45.472833ms; Slowest stage was H1 to H2 (15 moves) at 45.114834ms
         "B' L U2 R2 L' D L U F2 D' L2 D' L' R' B D' F2 B' U B' U L' U2 L F",
+        // some more scrambler things
+        "F' R' F2 U2 L B2 D B' L D L R F2 U' B2 D' U2 B' D U' L D2 B2 F' D2 L' R B' F R2 B F D' L D2 L2 D2 L2 D U'",
+        "U B R' D U' L' B L R2 U' B2 F U B2 F2 D2 F2 D2 B2 F' R2 D2 F D U2 B F2 U F U F U L D' R' B2 R2 U2 L2 R2",
+        "F2 U2 R' D2 L' R' F2 L' F D2 L B2 L U2 F' U F2 R' F2 L' B2 R2 D B' D' L F2 D U2 B' F' U2 F' U2 B2 F' D2 B2 R U'",
+        "D L2 B R2 B L' D2 U R' B' F R D2 U F L2 D F' U' L' R B2 U2 B2 U' R D R' D2 F L' D U' L' D B F2 R' F D",
+        "F2 L D R2 F' L2 B' F2 R D' L2 R' U' F R2 B D2 B' R2 U L R' D' U F' L U2 L R' D R2 B' F D2 F2 L D2 U L D",
     ] {
         println!("Operating on scramble: {}", input);
 
-        println!("Thistlethwaite:");
+        let thistle_start = Instant::now();
+        println!("  Thistlethwaite:");
         thistle_stuff(input, &thistle_cache);
+        let elapsed = thistle_start.elapsed();
 
-        println!("Kociemba:");
+        if elapsed > worst_thistle_time {
+            worst_thistle_time = elapsed;
+            worst_thistle_scramble = input;
+        }
+
+        let kociemba_start = Instant::now();
+        println!("  Kociemba:");
         kociemba_stuff(input, &kociemba_cache);
         println!();
+        let elapsed = kociemba_start.elapsed();
+
+        if elapsed > worst_kociemba_time {
+            worst_kociemba_time = elapsed;
+            worst_kociemba_scramble = input;
+        }
     }
+
+    println!(
+        "Worst thistlethwaite input took {:?}: {}",
+        worst_thistle_time, worst_thistle_scramble
+    );
+    println!(
+        "Worst kociemba input took {:?}: {}",
+        worst_kociemba_time, worst_kociemba_scramble
+    );
 }
 
 fn main() {

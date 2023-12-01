@@ -1,0 +1,109 @@
+Pre-populating the thistlethwaite caches took 764.478541ms
+Pre-populating the kociemba caches took 1.327690709s
+
+Operating on scramble: R U F
+  Thistlethwaite:
+    Total solution has 2+0+2+1 == 5 moves: F' U U2 R R2
+    Total time was 65.209µs; Slowest stage was G2 to G3 (2 moves) at 34.5µs
+  Kociemba:
+    Total solution has 2+2 == 4 moves: F' U U2 R'
+    Total time was 31.25µs; Slowest stage was H1 to H2 (2 moves) at 14.459µs
+
+Operating on scramble: R U F R U F
+  Thistlethwaite:
+    Total solution has 3+7+10+12 == 32 moves: U B U F L' F L' U2 L' B L U2 L B2 D2 L B2 L' U2 R D2 B2 U2 B2 L2 U2 F2 R2 B2 U2 R2 D2
+    Total time was 7.026209ms; Slowest stage was G3 to G4 (12 moves) at 6.097208ms
+  Kociemba:
+    Total solution has 5+2 == 7 moves: F' U' R' F' U U2 R'
+    Total time was 33.917µs; Slowest stage was H0 to H1 (5 moves) at 20.208µs
+
+Operating on scramble: R U F R U F R U F
+  Thistlethwaite:
+    Total solution has 4+7+7+11 == 29 moves: R B F' U U2 B' U2 F' L R' F F2 L' U2 F2 U2 F2 R U2 L2 U2 R2 D2 B2 R2 F2 R2 U2 B2
+    Total time was 1.884917ms; Slowest stage was G3 to G4 (11 moves) at 1.069083ms
+  Kociemba:
+    Total solution has 8+15 == 23 moves: U' L' U L2 F U B2 D D2 L' D2 B2 F2 R D2 R' F2 L' U2 B2 R2 U2 R
+    Total time was 106.654ms; Slowest stage was H1 to H2 (15 moves) at 106.601209ms
+
+Operating on scramble: R U F R U F R U F2
+  Thistlethwaite:
+    Total solution has 5+6+7+11 == 29 moves: F2 R B R U F2 U2 B L' R' B D2 L D2 F2 U2 F2 L U2 B2 L2 D2 U2 B2 R2 U2 R2 U2 B2
+    Total time was 1.116916ms; Slowest stage was G3 to G4 (11 moves) at 870.125µs
+  Kociemba:
+    Total solution has 8+2 == 10 moves: F2 U' R' F' U' R' F' U U2 R'
+    Total time was 87.792µs; Slowest stage was H0 to H1 (8 moves) at 72.625µs
+
+Operating on scramble: U R2 F B R B2 R U2 L B2 R U' D' R2 F R' L B2 U2 F2
+  Thistlethwaite:
+    Total solution has 7+5+8+11 == 31 moves: U B D L' F' R' U B D2 B R2 B U2 L F2 L' U2 L B2 R U2 F2 L2 B2 U2 F2 D2 L2 D2 L2 F2
+    Total time was 982.583µs; Slowest stage was G3 to G4 (11 moves) at 945.125µs
+  Kociemba:
+    Total solution has 10+13 == 23 moves: D U B U2 B2 L' R U B F D2 R D2 U2 R' D2 R D2 L2 B2 D2 R D2
+    Total time was 9.206292ms; Slowest stage was H1 to H2 (13 moves) at 7.681834ms
+
+Operating on scramble: B U F' L U R' L' F2 D' F2 L F' R' D L' D U2 R' U2 F' D' R2 F2 B' U2
+  Thistlethwaite:
+    Total solution has 5+8+11+11 == 35 moves: D' B L D U F D2 R' U2 L2 B2 U2 F U2 L U2 L D2 L2 F2 L' F2 D2 R L2 B2 U2 F2 U2 R2 U2 R2 U2 F2 L2
+    Total time was 4.99575ms; Slowest stage was G3 to G4 (11 moves) at 2.586ms
+  Kociemba:
+    Total solution has 10+15 == 25 moves: D L' F' U R' D B2 F U B U2 L D2 L2 D2 L U2 R F2 R' F2 U2 R' D2 L2
+    Total time was 41.901625ms; Slowest stage was H1 to H2 (15 moves) at 39.712041ms
+
+Operating on scramble: L U B2 F2 D' B' R U2 F B L' R2 U2 B' F2 R' U B' D' L U' F D F2 B
+  Thistlethwaite:
+    Total solution has 5+8+8+10 == 31 moves: D R D L' U B L B U2 L' F2 R' B D2 F2 L D2 B2 L F2 R U2 B2 L2 B2 U2 R2 D2 B2 R2 B2
+    Total time was 843.042µs; Slowest stage was G2 to G3 (8 moves) at 374.458µs
+  Kociemba:
+    Total solution has 7+12 == 19 moves: U L' D R' D' U' F R' B2 L' F2 U2 B2 D2 R D2 L' U2 R'
+    Total time was 2.630417ms; Slowest stage was H1 to H2 (12 moves) at 2.591625ms
+
+Operating on scramble: B' L U2 R2 L' D L U F2 D' L2 D' L' R' B D' F2 B' U B' U L' U2 L F
+  Thistlethwaite:
+    Total solution has 5+8+8+11 == 32 moves: F U B2 L D R' B2 R F2 R D2 U2 F D2 L' D2 L U2 B2 F2 L U2 L2 B2 L2 D2 L2 B2 U2 F2 U2 B2
+    Total time was 4.07275ms; Slowest stage was G1 to G2 (8 moves) at 2.522584ms
+  Kociemba:
+    Total solution has 9+15 == 24 moves: D' F' D U2 F' D2 R F U D2 L F2 L' D2 B2 R' D2 L U2 B2 F2 R' B2 L'
+    Total time was 41.293417ms; Slowest stage was H1 to H2 (15 moves) at 40.92575ms
+
+Operating on scramble: F' R' F2 U2 L B2 D B' L D L R F2 U' B2 D' U2 B' D U' L D2 B2 F' D2 L' R B' F R2 B F D' L D2 L2 D2 L2 D U'
+  Thistlethwaite:
+    Total solution has 4+8+7+10 == 29 moves: B L D U U2 R' U2 L' B F' L' B F2 L2 D2 B2 L' U2 L B2 R2 B2 F2 D2 B2 R2 B2 L2 F2
+    Total time was 1.057709ms; Slowest stage was G3 to G4 (10 moves) at 500.875µs
+  Kociemba:
+    Total solution has 10+13 == 23 moves: F' D' L U2 L2 F D B F' U R2 D2 U2 R' F2 D2 R2 F2 D2 B2 R' B2 D2
+    Total time was 27.292875ms; Slowest stage was H1 to H2 (13 moves) at 22.390709ms
+
+Operating on scramble: U B R' D U' L' B L R2 U' B2 F U B2 F2 D2 F2 D2 B2 F' R2 D2 F D U2 B F2 U F U F U L D' R' B2 R2 U2 L2 R2
+  Thistlethwaite:
+    Total solution has 4+9+10+12 == 35 moves: F R F U D2 L2 B F2 U2 R' U2 L2 B B2 L U2 L' U2 L B2 L2 U2 R B2 U2 B2 U2 B2 L2 B2 L2 U2 L2 B2 U2
+    Total time was 14.78925ms; Slowest stage was G3 to G4 (12 moves) at 8.589333ms
+  Kociemba:
+    Total solution has 9+14 == 23 moves: R2 B2 L' F' L' D L2 F D B2 R U2 B2 L' F2 U2 R2 U2 L' B2 R F2 R'
+    Total time was 10.730292ms; Slowest stage was H1 to H2 (14 moves) at 10.025792ms
+
+Operating on scramble: F2 U2 R' D2 L' R' F2 L' F D2 L B2 L U2 F' U F2 R' F2 L' B2 R2 D B' D' L F2 D U2 B' F' U2 F' U2 B2 F' D2 B2 R U'
+  Thistlethwaite:
+    Total solution has 5+8+9+12 == 34 moves: U' B' L R D L R B' R B R U2 F L' D2 L U2 L2 B2 L' U2 L U2 B2 D2 U2 L2 B2 R2 B2 U2 L2 U2 F2
+    Total time was 4.606917ms; Slowest stage was G3 to G4 (12 moves) at 3.152708ms
+  Kociemba:
+    Total solution has 10+14 == 24 moves: D L' D2 U R U L D' U F U2 B2 U2 R' B2 D2 L' F2 U2 B2 U2 R2 B2 R'
+    Total time was 20.775125ms; Slowest stage was H1 to H2 (14 moves) at 18.676208ms
+
+Operating on scramble: D L2 B R2 B L' D2 U R' B' F R D2 U F L2 D F' U' L' R B2 U2 B2 U' R D R' D2 F L' D U' L' D B F2 R' F D
+  Thistlethwaite:
+    Total solution has 5+9+8+9 == 31 moves: B R U' F2 D U2 F' R' F' D2 U2 F2 L' F L U2 B2 L F2 D2 U2 R U2 B2 U2 R2 D2 L2 R2 B2 D2
+    Total time was 3.218542ms; Slowest stage was G1 to G2 (9 moves) at 2.228708ms
+  Kociemba:
+    Total solution has 10+13 == 23 moves: U' L2 F R D' U L' D2 R F F2 L' B2 U2 R' F2 L U2 R' B2 R' F2 L'
+    Total time was 2.887916ms; Slowest stage was H0 to H1 (10 moves) at 1.597458ms
+
+Operating on scramble: F2 L D R2 F' L2 B' F2 R D' L2 R' U' F R2 B D2 B' R2 U L R' D' U F' L U2 L R' D R2 B' F D2 F2 L D2 U L D
+  Thistlethwaite:
+    Total solution has 5+9+7+11 == 32 moves: B D F2 L U D2 L' B L F2 R' B' L2 F B2 L F2 U2 L B2 L B2 L2 U2 R2 U2 F2 R2 U2 B2 L2 D2
+    Total time was 4.727334ms; Slowest stage was G1 to G2 (9 moves) at 2.327917ms
+  Kociemba:
+    Total solution has 10+13 == 23 moves: U' R2 B' U R F2 L' U' R2 F D2 L' B2 F2 U2 L2 R' D2 R U2 L' F2 D2
+    Total time was 8.495083ms; Slowest stage was H1 to H2 (13 moves) at 6.891167ms
+
+Worst thistlethwaite input took 14.793125ms: U B R' D U' L' B L R2 U' B2 F U B2 F2 D2 F2 D2 B2 F' R2 D2 F D U2 B F2 U F U F U L D' R' B2 R2 U2 L2 R2
+Worst kociemba input took 106.66075ms: R U F R U F R U F
