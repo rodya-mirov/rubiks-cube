@@ -8,6 +8,6 @@ echo "Running samples ..."
 
 OUTFILE=benchmark_results.txt
 
-./target/release/rubiks-cube > $OUTFILE
+./target/release/rubiks-cube benchmark > $OUTFILE
 
 echo "All done! Results in ${OUTFILE}"

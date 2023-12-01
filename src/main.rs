@@ -359,12 +359,23 @@ fn big_suite() {
     );
 }
 
+use clap::{Parser, Subcommand};
+
+#[derive(Parser)]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    Benchmark,
+}
+
 fn main() {
-    // this is just debug stuff, uncomment to allow
-    // wc_stuff();
+    let cli = Cli::parse();
 
-    // thistle_suite();
-    // kociemba_suite();
-
-    big_suite()
+    match &cli.command {
+        Commands::Benchmark => big_suite(),
+    }
 }
