@@ -5,20 +5,20 @@ use crate::moves::CanMove;
 pub struct EdgeOrientationState {
     // each field is "this edge is good"
     // top layer
-    uf: bool,
-    ub: bool,
-    ul: bool,
-    ur: bool,
+    pub uf: bool,
+    pub ub: bool,
+    pub ul: bool,
+    pub ur: bool,
     // mid layer
-    fl: bool,
-    fr: bool,
-    bl: bool,
-    br: bool,
+    pub fl: bool,
+    pub fr: bool,
+    pub bl: bool,
+    pub br: bool,
     // bot layer
-    df: bool,
-    db: bool,
-    dl: bool,
-    dr: bool,
+    pub df: bool,
+    pub db: bool,
+    pub dl: bool,
+    pub dr: bool,
 }
 
 impl EdgeOrientationState {

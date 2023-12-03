@@ -17,18 +17,42 @@ pub enum Facelet {
     Orange,
 }
 
-const CORNERS: [[Facelet; 3]; 8] = [
-    // In order: front, top, right
-    // starting with "white on the front" ...
-    [Facelet::White, Facelet::Blue, Facelet::Red],
+// DO NOT reorder this array; it must be kept in sync with CornerCubelet::to_index
+pub const CORNERS: [[Facelet; 3]; 8] = [
+    // top corners first; FUL, FUR, BUR, BUL
+    // given from top, clockwise
+    [Facelet::Yellow, Facelet::Green, Facelet::Red],
+    [Facelet::Yellow, Facelet::Orange, Facelet::Green],
+    [Facelet::Yellow, Facelet::Blue, Facelet::Orange],
+    [Facelet::Yellow, Facelet::Red, Facelet::Blue],
+    // then bottom corners; FDL, FDR, BDR, BDL
+    // given from bottom, clockwise
     [Facelet::White, Facelet::Red, Facelet::Green],
     [Facelet::White, Facelet::Green, Facelet::Orange],
     [Facelet::White, Facelet::Orange, Facelet::Blue],
-    // ... then the "yellow on the front"
-    [Facelet::Yellow, Facelet::Blue, Facelet::Orange],
-    [Facelet::Yellow, Facelet::Orange, Facelet::Green],
-    [Facelet::Yellow, Facelet::Green, Facelet::Red],
-    [Facelet::Yellow, Facelet::Red, Facelet::Blue],
+    [Facelet::White, Facelet::Blue, Facelet::Red],
+];
+
+// DO NOT reorder this array; it must be kept in sync with SideCubelet::to_index
+pub const EDGES: [[Facelet; 2]; 12] = [
+    // left first; UL, FL, DL, BL
+    // given from red (correctly oriented, if you put in from the left)
+    [Facelet::Red, Facelet::Yellow],
+    [Facelet::Red, Facelet::Green],
+    [Facelet::Red, Facelet::White],
+    [Facelet::Red, Facelet::Blue],
+    // then the middle slice: FU, FD, BD, BU
+    // given from front/back (green/blue)
+    [Facelet::Green, Facelet::Yellow],
+    [Facelet::Green, Facelet::White],
+    [Facelet::Blue, Facelet::White],
+    [Facelet::Blue, Facelet::Yellow],
+    // then right face: UR, BR, DR, FR
+    // given from orange (correctly oriented, if you put in from the right)
+    [Facelet::Orange, Facelet::Yellow],
+    [Facelet::Orange, Facelet::Blue],
+    [Facelet::Orange, Facelet::White],
+    [Facelet::Orange, Facelet::Green],
 ];
 
 pub fn get_third_corner(front: Facelet, top: Facelet) -> Facelet {

@@ -19,16 +19,17 @@ pub enum CornerCubelet {
 }
 
 impl CornerCubelet {
-    fn to_index(&self) -> u8 {
+    pub fn to_index(&self) -> u8 {
+        // do not change these indices, they are in sync with CORNERS array
         match self {
             CornerCubelet::FUL => 0,
             CornerCubelet::FUR => 1,
-            CornerCubelet::BUL => 2,
-            CornerCubelet::BUR => 3,
+            CornerCubelet::BUR => 2,
+            CornerCubelet::BUL => 3,
             CornerCubelet::FDL => 4,
             CornerCubelet::FDR => 5,
-            CornerCubelet::BDL => 6,
-            CornerCubelet::BDR => 7,
+            CornerCubelet::BDR => 6,
+            CornerCubelet::BDL => 7,
         }
     }
 }

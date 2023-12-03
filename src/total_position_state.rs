@@ -14,6 +14,14 @@ impl CubePositions {
         self == &CubePositions::make_solved()
     }
 
+    pub fn directly_solvable(&self) -> bool {
+        // if they're both solvable, great; you can do the permutation things
+        // and solve them completely independently
+        // if neither is solvable, also great; a single swap will fix both, and
+        // there is a move which swaps one pair of edges and one pair of corners
+        !(self.edges.directly_solvable() ^ self.corners.directly_solvable())
+    }
+
     pub fn make_solved() -> CubePositions {
         CubePositions {
             edges: CubeEdgePositions::make_solved(),

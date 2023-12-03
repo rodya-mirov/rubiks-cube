@@ -10,7 +10,7 @@ pub fn solve_to_h1(cube: &Cube, cache: &H0toH1Cache) -> Vec<FullMove> {
     let start_state = RunningState::from_cube(cube);
 
     // i have no idea
-    const MAX_MOVES: usize = 16;
+    const MAX_MOVES: usize = 17;
 
     dfs_util::solve(
         start_state,

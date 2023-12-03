@@ -1,5 +1,6 @@
 use std::time::{Duration, Instant};
 
+use clap::{Parser, Subcommand};
 use itertools::concat;
 
 use crate::corner_orientation_state::CornerOrientationState;
@@ -8,6 +9,7 @@ use crate::edge_orientation_state::EdgeOrientationState;
 use crate::edge_slice_state::EdgeMidSliceState;
 use crate::moves::{parse_many, to_nice_str, ApplyMove, FullMove};
 use crate::shadow::to_white_cross;
+use crate::thistlethwaite::ThistlethwaiteCaches;
 use crate::timed::timed;
 
 mod corner_orientation_state;
@@ -20,6 +22,7 @@ mod edge_slice_state;
 mod heuristic_caches;
 mod kociemba;
 mod moves;
+mod scramble;
 mod shadow;
 mod solve;
 mod thistlethwaite;
@@ -359,7 +362,22 @@ fn big_suite() {
     );
 }
 
-use clap::{Parser, Subcommand};
+fn scramble_things() {
+    println!("Warming up solver cache ...");
+    let start = Instant::now();
+    let cache = ThistlethwaiteCaches::initialize();
+    println!("Cache ready (took {:?})", start.elapsed());
+
+    let scrambled = scramble::scramble_any();
+
+    let start = Instant::now();
+    let solution = thistlethwaite::full_solve(&scrambled, &cache);
+    let elapsed = start.elapsed();
+
+    let rev = moves::invert(&solution);
+
+    println!("Found scramble (in {elapsed:?}): {}", to_nice_str(&rev));
+}
 
 #[derive(Parser)]
 struct Cli {
@@ -370,6 +388,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     Benchmark,
+    Scramble,
 }
 
 fn main() {
@@ -377,5 +396,6 @@ fn main() {
 
     match &cli.command {
         Commands::Benchmark => big_suite(),
+        Commands::Scramble => scramble_things(),
     }
 }

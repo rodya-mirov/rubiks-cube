@@ -22,20 +22,24 @@ pub enum SideCubelet {
 }
 
 impl SideCubelet {
-    fn to_index(&self) -> u8 {
+    pub fn to_index(&self) -> u8 {
+        // do not change these indices, they are in sync with EDGES array
         match self {
-            SideCubelet::UF => 0,
-            SideCubelet::UR => 1,
-            SideCubelet::UB => 2,
-            SideCubelet::UL => 3,
-            SideCubelet::FL => 4,
-            SideCubelet::FR => 5,
-            SideCubelet::BL => 6,
-            SideCubelet::BR => 7,
-            SideCubelet::DF => 8,
-            SideCubelet::DR => 9,
-            SideCubelet::DB => 10,
-            SideCubelet::DL => 11,
+            // left side first
+            SideCubelet::UL => 0,
+            SideCubelet::FL => 1,
+            SideCubelet::DL => 2,
+            SideCubelet::BL => 3,
+            // then mid
+            SideCubelet::UF => 4,
+            SideCubelet::DF => 5,
+            SideCubelet::DB => 6,
+            SideCubelet::UB => 7,
+            // then right
+            SideCubelet::UR => 8,
+            SideCubelet::BR => 9,
+            SideCubelet::DR => 10,
+            SideCubelet::FR => 11,
         }
     }
 }

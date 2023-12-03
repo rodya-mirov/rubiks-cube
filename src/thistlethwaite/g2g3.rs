@@ -79,7 +79,7 @@ impl Heuristic<CubePositions> for G2toG3Cache {
 
 /// Given a cube in G2, solve to G3
 pub fn solve_to_g3(cube: &Cube, cache: &G2toG3Cache) -> Vec<FullMove> {
-    const MAX_MOVES: usize = 13;
+    const MAX_MOVES: usize = 14;
 
     dfs_util::solve(
         CubePositions::from_cube(cube),

@@ -7,7 +7,7 @@ use std::iter::Sum;
 use std::ops::Add;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
-enum CornerOrientation {
+pub enum CornerOrientation {
     Good,
     // means it has been rotated once CW
     CW,
@@ -63,15 +63,15 @@ impl CornerOrientation {
 pub struct CornerOrientationState {
     // each field is "this corner is in this orientation"
     // F corners
-    ful: CornerOrientation,
-    fur: CornerOrientation,
-    fdl: CornerOrientation,
-    fdr: CornerOrientation,
+    pub ful: CornerOrientation,
+    pub fur: CornerOrientation,
+    pub fdl: CornerOrientation,
+    pub fdr: CornerOrientation,
     // B corners
-    bul: CornerOrientation,
-    bur: CornerOrientation,
-    bdl: CornerOrientation,
-    bdr: CornerOrientation,
+    pub bul: CornerOrientation,
+    pub bur: CornerOrientation,
+    pub bdl: CornerOrientation,
+    pub bdr: CornerOrientation,
 }
 
 impl CornerOrientationState {

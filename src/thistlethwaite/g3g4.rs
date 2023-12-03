@@ -51,7 +51,7 @@ impl Heuristic<CubePositions> for G3toG4Cache {
 }
 
 pub fn solve_to_g4(cube: &Cube, cache: &G3toG4Cache) -> Vec<FullMove> {
-    const MAX_MOVES: usize = 15;
+    const MAX_MOVES: usize = 16;
 
     dfs_util::solve(
         CubePositions::from_cube(cube),

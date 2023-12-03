@@ -55,6 +55,29 @@ impl Display for FullMove {
     }
 }
 
+pub fn invert(fms: &[FullMove]) -> Vec<FullMove> {
+    fn inv_fm(fm: FullMove) -> FullMove {
+        let rev_amt: Amt = match fm.amt {
+            Amt::Two => Amt::Two,
+            Amt::One => Amt::Rev,
+            Amt::Rev => Amt::One,
+        };
+
+        FullMove {
+            dir: fm.dir,
+            amt: rev_amt,
+        }
+    }
+
+    let mut out = Vec::with_capacity(fms.len());
+
+    for fm in fms.iter().copied().rev() {
+        out.push(inv_fm(fm));
+    }
+
+    out
+}
+
 pub fn to_nice_str(fms: &[FullMove]) -> String {
     let mut moves = fms.iter().copied();
 
