@@ -111,10 +111,10 @@ impl Heuristic<G1State> for &G1toG2Cache {
 }
 
 /// Solve to G2. Assumes the input is already in G1, results not guaranteed if not.
+#[inline(never)]
 pub fn solve_to_g2(cube: &Cube, cache: &G1toG2Cache) -> Vec<FullMove> {
     const MAX_MOVES: usize = 11;
 
-    // TODO perf: can probably have a corners-specific and edges-specific heuristic for A* search
     dfs_util::solve(
         G1State::from_cube(cube),
         &FREE_DIRS,

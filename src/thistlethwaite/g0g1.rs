@@ -23,6 +23,7 @@ impl G0toG1Cache {
 }
 
 /// Solves a given cube to G1. Assumes the input is in G0 (that is, solvable).
+#[inline(never)]
 pub fn solve_to_g1(cube: &Cube, cache: &G0toG1Cache) -> Vec<FullMove> {
     // note: this should be 7? i'm not sure why i need to bump it to 8? it doesn't really matter,
     // it's still finding correct answers, but there's something funny here
