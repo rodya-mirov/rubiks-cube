@@ -7,9 +7,9 @@ use crate::corner_orientation_state::CornerOrientationState;
 use crate::cube::Facelet;
 use crate::edge_orientation_state::EdgeOrientationState;
 use crate::edge_slice_state::EdgeMidSliceState;
+use crate::kociemba::KociembaCaches;
 use crate::moves::{parse_many, to_nice_str, ApplyMove, FullMove};
 use crate::shadow::to_white_cross;
-use crate::thistlethwaite::ThistlethwaiteCaches;
 use crate::timed::timed;
 
 mod corner_orientation_state;
@@ -365,13 +365,13 @@ fn big_suite() {
 fn scramble_things() {
     println!("Warming up solver cache ...");
     let start = Instant::now();
-    let cache = ThistlethwaiteCaches::initialize();
+    let cache = KociembaCaches::initialize();
     println!("Cache ready (took {:?})", start.elapsed());
 
     let scrambled = scramble::scramble_any();
 
     let start = Instant::now();
-    let solution = thistlethwaite::full_solve(&scrambled, &cache);
+    let solution = kociemba::full_solve(&scrambled, &cache);
     let elapsed = start.elapsed();
 
     let rev = moves::invert(&solution);

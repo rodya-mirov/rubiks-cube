@@ -19,7 +19,7 @@ impl CubePositions {
         // and solve them completely independently
         // if neither is solvable, also great; a single swap will fix both, and
         // there is a move which swaps one pair of edges and one pair of corners
-        !(self.edges.directly_solvable() ^ self.corners.directly_solvable())
+        self.edges.directly_solvable() == self.corners.directly_solvable()
     }
 
     pub fn make_solved() -> CubePositions {
@@ -78,5 +78,17 @@ impl CanMove for CubePositions {
             edges: self.edges.f(),
             corners: self.corners.f(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn solved_is_solvable() {
+        let input = CubePositions::make_solved();
+
+        assert!(input.directly_solvable());
     }
 }

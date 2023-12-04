@@ -27,6 +27,9 @@
 pub use h0h1::{solve_to_h1, H0toH1Cache};
 pub use h1h2::{solve_to_h2, H1toH2Cache};
 
+use crate::cube::Cube;
+use crate::moves::{ApplyMove, FullMove};
+
 mod h0h1;
 mod h1h2;
 
@@ -42,4 +45,16 @@ impl KociembaCaches {
             h1h2cache: H1toH2Cache::initialize(),
         }
     }
+}
+
+#[allow(unused)]
+pub fn full_solve(cube: &Cube, cache: &KociembaCaches) -> Vec<FullMove> {
+    let g0_solved = cube.clone();
+    let g1_solution = solve_to_h1(cube, &cache.h0h1cache);
+    let g1_solved = g0_solved.clone().apply_many(&g1_solution);
+    let g2_solution = solve_to_h2(&g1_solved, &cache.h1h2cache);
+
+    let mut full_solution = g1_solution;
+    full_solution.extend(g2_solution);
+    full_solution
 }

@@ -61,13 +61,13 @@
 //!
 //! G4 -- this is just "cube is solved." Easy peasy.
 
-use crate::cube::Cube;
-use crate::moves::{ApplyMove, FullMove};
 pub use g0g1::{solve_to_g1, G0toG1Cache};
 pub use g1g2::{solve_to_g2, G1toG2Cache};
 pub use g2g3::{solve_to_g3, G2toG3Cache};
 pub use g3g4::{solve_to_g4, G3toG4Cache};
-use std::time::{Instant, SystemTime};
+
+use crate::cube::Cube;
+use crate::moves::{ApplyMove, FullMove};
 
 mod g0g1;
 mod g1g2;
@@ -92,20 +92,16 @@ impl ThistlethwaiteCaches {
     }
 }
 
+#[allow(unused)]
 pub fn full_solve(cube: &Cube, cache: &ThistlethwaiteCaches) -> Vec<FullMove> {
     let g0_solved = cube.clone();
-    println!("{:?} Starting G0 -> G1", SystemTime::now());
     let g1_solution = solve_to_g1(cube, &cache.g0g1cache);
     let g1_solved = g0_solved.clone().apply_many(&g1_solution);
-    println!("{:?} Starting G1 -> G2", Instant::now());
     let g2_solution = solve_to_g2(&g1_solved, &cache.g1g2cache);
     let g2_solved = g1_solved.clone().apply_many(&g2_solution);
-    println!("{:?} Starting G2 -> G3", Instant::now());
     let g3_solution = solve_to_g3(&g2_solved, &cache.g2g3cache);
     let g3_solved = g2_solved.clone().apply_many(&g3_solution);
-    println!("{:?} Starting G3 -> G4", Instant::now());
     let g4_solution = solve_to_g4(&g3_solved, &cache.g3g4cache);
-    println!("{:?} All done", Instant::now());
 
     let mut full_solution = g1_solution;
     full_solution.extend(g2_solution);

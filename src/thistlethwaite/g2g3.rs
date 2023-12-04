@@ -81,41 +81,6 @@ impl Heuristic<CubePositions> for G2toG3Cache {
 pub fn solve_to_g3(cube: &Cube, cache: &G2toG3Cache) -> Vec<FullMove> {
     let pos_state = CubePositions::from_cube(cube);
 
-    assert!(
-        pos_state.edges.directly_solvable(),
-        "Edges should be solvable"
-    );
-    assert!(
-        pos_state.corners.directly_solvable(),
-        "Corners should be solvable"
-    );
-
-    println!("Cube state, sorry: {pos_state:#?}");
-
-    println!("Solving edges?");
-
-    dfs_util::solve(
-        pos_state.edges.clone(),
-        &G2_FREE_DIRS,
-        &G2_DOUBLE_DIRS,
-        |s| cache.edges.contains(s),
-        &cache.edge_heuristic,
-        10,
-    );
-
-    println!("Solving corners?");
-
-    dfs_util::solve(
-        pos_state.corners.clone(),
-        &G2_FREE_DIRS,
-        &G2_DOUBLE_DIRS,
-        |s| cache.corners.contains(s),
-        &cache.corner_heuristic,
-        10,
-    );
-
-    println!("Try the whole thing I guess?");
-
     const MAX_MOVES: usize = 14;
 
     dfs_util::solve(

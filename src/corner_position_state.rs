@@ -64,12 +64,12 @@ impl CubeCornerPositions {
         match index {
             0 => self.ful.clone(),
             1 => self.fur.clone(),
-            2 => self.bul.clone(),
-            3 => self.bur.clone(),
+            2 => self.bur.clone(),
+            3 => self.bul.clone(),
             4 => self.fdl.clone(),
             5 => self.fdr.clone(),
-            6 => self.bdl.clone(),
-            7 => self.bdr.clone(),
+            6 => self.bdr.clone(),
+            7 => self.bdl.clone(),
             _ => panic!("Out of range index {index}"),
         }
     }

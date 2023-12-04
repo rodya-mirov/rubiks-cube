@@ -80,18 +80,18 @@ impl CubeEdgePositions {
 
     fn ind(&self, index: u8) -> SideCubelet {
         match index {
-            0 => self.uf.clone(),
-            1 => self.ur.clone(),
-            2 => self.ub.clone(),
-            3 => self.ul.clone(),
-            4 => self.fl.clone(),
-            5 => self.fr.clone(),
-            6 => self.bl.clone(),
-            7 => self.br.clone(),
-            8 => self.df.clone(),
-            9 => self.dr.clone(),
-            10 => self.db.clone(),
-            11 => self.dl.clone(),
+            0 => self.ul.clone(),
+            1 => self.fl.clone(),
+            2 => self.dl.clone(),
+            3 => self.bl.clone(),
+            4 => self.uf.clone(),
+            5 => self.df.clone(),
+            6 => self.db.clone(),
+            7 => self.ub.clone(),
+            8 => self.ur.clone(),
+            9 => self.br.clone(),
+            10 => self.dr.clone(),
+            11 => self.fr.clone(),
             _ => panic!("Out of range index {index}"),
         }
     }
@@ -121,7 +121,8 @@ impl CubeEdgePositions {
                 cycle_length += 1;
             }
 
-            if cycle_length % 2 != 1 {
+            // even-length cycles have odd parity; odd-length cycles have even parity
+            if cycle_length % 2 == 0 {
                 total_is_even = !total_is_even;
             }
         }
